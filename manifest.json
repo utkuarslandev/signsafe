@@ -10,12 +10,12 @@
     "https://api.openai.com/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content_script.js"],
+      "js": ["shared/constants.js", "src/content/overlay-session.js", "src/content/content-script.js"],
       "run_at": "document_start",
       "all_frames": false
     }
@@ -27,10 +27,14 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "page_hook.js",
+        "shared/constants.js",
+        "shared/demo-fixtures.js",
+        "shared/page-helpers.js",
+        "shared/overlay-helpers.js",
+        "src/page/page-hook.js",
         "overlay.html",
         "overlay.css",
-        "overlay.js"
+        "src/overlay/overlay.js"
       ],
       "matches": ["<all_urls>"]
     }

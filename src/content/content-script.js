@@ -1,7 +1,13 @@
 (function bootstrapSignSafeContentScript() {
-  const PAGE_CHANNEL = "SIGNSAFE_PAGE_BRIDGE";
-  const OVERLAY_CHANNEL = "SIGNSAFE_OVERLAY";
-  const DEBUG = false;
+  const CONSTANTS = globalThis.SIGNSAFE_SHARED?.constants || {};
+  const PAGE_CHANNEL = CONSTANTS.PAGE_CHANNEL || "SIGNSAFE_PAGE_BRIDGE";
+  const OVERLAY_CHANNEL = CONSTANTS.OVERLAY_CHANNEL || "SIGNSAFE_OVERLAY";
+  const PAGE_MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES?.PAGE || {};
+  const OVERLAY_MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES?.OVERLAY || {};
+  const RUNTIME_MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES?.RUNTIME || {};
+  const DEBUG_STORAGE_KEY = CONSTANTS.DEBUG_STORAGE_KEY || "signsafe-debug";
+  const DEBUG = isDebugEnabled();
+  const createOverlaySession = globalThis.SIGNSAFE_CONTENT?.createOverlaySession;
   let analysisInProgress = false;
 
   syncDebugState();
@@ -13,7 +19,7 @@
     }
 
     const message = event.data;
-    if (!message || message.channel !== PAGE_CHANNEL || message.type !== "ANALYZE_REQUEST") {
+    if (!message || message.channel !== PAGE_CHANNEL || message.type !== (PAGE_MESSAGE_TYPES.ANALYZE_REQUEST || "ANALYZE_REQUEST")) {
       return;
     }
 
@@ -24,7 +30,7 @@
       window.postMessage(
         {
           channel: PAGE_CHANNEL,
-          type: "ANALYZE_RESPONSE",
+          type: PAGE_MESSAGE_TYPES.ANALYZE_RESPONSE || "ANALYZE_RESPONSE",
           requestId: message.requestId,
           approved: false,
           error: "Another SignSafe analysis is already in progress."
@@ -41,7 +47,7 @@
     window.postMessage(
       {
         channel: PAGE_CHANNEL,
-        type: "ANALYZE_RESPONSE",
+        type: PAGE_MESSAGE_TYPES.ANALYZE_RESPONSE || "ANALYZE_RESPONSE",
         requestId: message.requestId,
         ...response
       },
@@ -50,12 +56,28 @@
   });
 
   function injectPageHook() {
-    const script = document.createElement("script");
-    script.src = chrome.runtime.getURL("page_hook.js");
-    script.dataset.signsafe = "true";
-    script.onload = () => script.remove();
-    (document.head || document.documentElement).appendChild(script);
-    debugLog("injected page hook");
+    injectPageScript("shared/constants.js")
+      .then(() => injectPageScript("shared/page-helpers.js"))
+      .then(() => injectPageScript("src/page/page-hook.js"))
+      .then(() => debugLog("injected page hook"))
+      .catch((error) => debugLog("page hook injection failed", error?.message || String(error)));
+  }
+
+  function injectPageScript(path) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = chrome.runtime.getURL(path);
+      script.dataset.signsafe = "true";
+      script.onload = () => {
+        script.remove();
+        resolve();
+      };
+      script.onerror = () => {
+        script.remove();
+        reject(new Error(`Failed to load ${path}`));
+      };
+      (document.head || document.documentElement).appendChild(script);
+    });
   }
 
   async function handleAnalyzeRequest(message) {
@@ -120,7 +142,7 @@
       const verdicts = await Promise.all(
         message.transactions.map((tx) =>
           sendRuntimeMessage({
-            type: "ANALYZE_TX",
+            type: RUNTIME_MESSAGE_TYPES.ANALYZE_TX || "ANALYZE_TX",
             tx,
             method: message.method,
             sourceUrl: message.sourceUrl
@@ -190,86 +212,6 @@
     });
   }
 
-  function createOverlaySession() {
-    const sessionId = `signsafe-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const iframe = document.createElement("iframe");
-    const ready = new Promise((resolve) => {
-      iframe.addEventListener("load", resolve, { once: true });
-    });
-
-    iframe.id = "signsafe-overlay";
-    iframe.src = chrome.runtime.getURL("overlay.html");
-    iframe.setAttribute("allowtransparency", "true");
-    iframe.style.cssText = [
-      "position:fixed",
-      "inset:0",
-      "width:100%",
-      "height:100%",
-      "border:none",
-      "background:transparent",
-      "z-index:2147483647"
-    ].join(";");
-
-    const host = document.documentElement || document.body;
-    host.appendChild(iframe);
-
-    async function post(message) {
-      await ready;
-      iframe.contentWindow.postMessage(
-        {
-          channel: OVERLAY_CHANNEL,
-          sessionId,
-          ...message
-        },
-        "*"
-      );
-    }
-
-    function awaitDecision(type, payload) {
-      return new Promise(async (resolve) => {
-        const handler = (event) => {
-          const message = event.data;
-          if (
-            event.source !== iframe.contentWindow ||
-            !message ||
-            message.channel !== OVERLAY_CHANNEL ||
-            message.sessionId !== sessionId ||
-            message.type !== "DECISION"
-          ) {
-            return;
-          }
-
-          window.removeEventListener("message", handler);
-          resolve(Boolean(message.approved));
-        };
-
-        window.addEventListener("message", handler);
-        await post({ type, payload });
-      });
-    }
-
-    return {
-      showLoading(payload) {
-        debugLog("overlay loading");
-        return post({ type: "SHOW_LOADING", payload });
-      },
-      showVerdict(verdict, meta) {
-        debugLog("overlay verdict", verdict?.risk, meta?.current, meta?.total);
-        return awaitDecision("SHOW_VERDICT", { verdict, meta });
-      },
-      showBatchSummary(verdicts) {
-        debugLog("overlay batch summary", verdicts.length);
-        return awaitDecision("SHOW_BATCH", { verdicts });
-      },
-      close() {
-        if (iframe.isConnected) {
-          debugLog("overlay closed");
-          iframe.remove();
-        }
-      }
-    };
-  }
-
   function debugLog(...args) {
     if (!DEBUG) {
       return;
@@ -280,14 +222,14 @@
 
   function isDebugEnabled() {
     try {
-      return Boolean(window.__SIGNSAFE_DEBUG__) || localStorage.getItem("signsafe-debug") === "1";
+      return Boolean(window.__SIGNSAFE_DEBUG__) || localStorage.getItem(DEBUG_STORAGE_KEY) === "1";
     } catch (_error) {
       return false;
     }
   }
 
   function syncDebugState() {
-    chrome.runtime.sendMessage({ type: "SET_DEBUG", enabled: DEBUG }, () => {
+    chrome.runtime.sendMessage({ type: RUNTIME_MESSAGE_TYPES.SET_DEBUG || "SET_DEBUG", enabled: DEBUG }, () => {
       void chrome.runtime.lastError;
     });
   }

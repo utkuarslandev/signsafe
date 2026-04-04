@@ -1,11 +1,25 @@
 (function bootstrapSignSafeOverlay() {
-  const CHANNEL = "SIGNSAFE_OVERLAY";
-  const DEBUG = false;
+  const CONSTANTS = globalThis.SIGNSAFE_SHARED?.constants || {};
+  const HELPERS = globalThis.SIGNSAFE_SHARED?.overlayHelpers || {};
+  const CHANNEL = CONSTANTS.OVERLAY_CHANNEL || "SIGNSAFE_OVERLAY";
+  const OVERLAY_MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES?.OVERLAY || {};
+  const DEBUG_STORAGE_KEY = CONSTANTS.DEBUG_STORAGE_KEY || "signsafe-debug";
+  const DEBUG = isDebugEnabled();
   const riskLabels = {
     safe: "Safe",
     review: "Review",
     danger: "Danger"
   };
+
+  const normalizeFacts = HELPERS.normalizeFacts || ((verdict) => verdict?.facts || {});
+  const normalizeArray = HELPERS.normalizeArray || ((value) => (Array.isArray(value) ? value : []));
+  const normalizeRisk = HELPERS.normalizeRisk || ((value) => value || "review");
+  const formatSolChanges = HELPERS.formatSolChanges || ((items) => String(items || ""));
+  const formatTokenChanges = HELPERS.formatTokenChanges || ((items) => String(items || ""));
+  const formatPrograms = HELPERS.formatPrograms || ((items) => String(items || ""));
+  const formatMessagePreview = HELPERS.formatMessagePreview || ((value) => String(value || ""));
+  const summarizeBatchFacts = HELPERS.summarizeBatchFacts || (() => ({}));
+  const phaseLabel = HELPERS.phaseLabel || (() => "Preparing");
 
   let currentSessionId = null;
 
@@ -19,17 +33,17 @@
     currentSessionId = message.sessionId;
     revealPanel();
 
-    if (message.type === "SHOW_LOADING") {
+    if (message.type === (OVERLAY_MESSAGE_TYPES.SHOW_LOADING || "SHOW_LOADING")) {
       renderLoading(message.payload || {});
       return;
     }
 
-    if (message.type === "SHOW_VERDICT") {
+    if (message.type === (OVERLAY_MESSAGE_TYPES.SHOW_VERDICT || "SHOW_VERDICT")) {
       renderVerdict(message.payload?.verdict || {}, message.payload?.meta || {});
       return;
     }
 
-    if (message.type === "SHOW_BATCH") {
+    if (message.type === (OVERLAY_MESSAGE_TYPES.SHOW_BATCH || "SHOW_BATCH")) {
       renderBatch(Array.isArray(message.payload?.verdicts) ? message.payload.verdicts : []);
     }
   });
@@ -48,7 +62,7 @@
       {
         channel: CHANNEL,
         sessionId,
-        type: "DECISION",
+        type: OVERLAY_MESSAGE_TYPES.DECISION || "DECISION",
         approved
       },
       "*"
@@ -103,7 +117,7 @@
       ].join(" | ")
     );
     setText("debug-json", JSON.stringify({ verdict, facts, meta }, null, 2));
-    document.getElementById("debug-details").open = reasonCodes.length > 0 || Boolean(facts.message_preview);
+    document.getElementById("debug-details").open = false;
 
     setButtonState({ loading: false, risk });
   }
@@ -137,7 +151,7 @@
       `Source: batch | Risk codes: ${Array.from(new Set(verdicts.flatMap((verdict) => normalizeArray(verdict.reason_codes)))).join(", ") || "none"}`
     );
     setText("batch-debug-json", JSON.stringify({ verdicts, combinedFacts }, null, 2));
-    document.getElementById("batch-debug-details").open = unsafeCount > 0;
+    document.getElementById("batch-debug-details").open = false;
 
     setButtonState({ loading: false, risk: unsafeCount === 0 ? "safe" : "review" });
   }
@@ -172,8 +186,8 @@
       entries.push(["Message preview", formatMessagePreview(facts.message_preview)]);
     }
 
-    const visible = entries.length > 0 ? entries : [["Facts", "No structured facts were supplied."]];
-    for (const [label, value] of visible) {
+    const visibleEntries = entries.length > 0 ? entries : [["Facts", "No structured facts were supplied."]];
+    for (const [label, value] of visibleEntries) {
       const card = document.createElement("div");
       card.className = `fact-card ${label === "Message preview" || value.length > 120 ? "wide" : ""}`.trim();
 
@@ -183,11 +197,7 @@
 
       const valueEl = document.createElement("div");
       valueEl.className = "fact-value";
-      if (Array.isArray(value)) {
-        valueEl.innerHTML = "";
-      } else {
-        valueEl.textContent = value;
-      }
+      valueEl.textContent = value;
 
       if (label === "Message preview") {
         valueEl.innerHTML = "";
@@ -196,8 +206,7 @@
         valueEl.appendChild(pre);
       } else if (typeof value === "string" && value.includes("\n")) {
         valueEl.innerHTML = "";
-        const lines = value.split("\n");
-        for (const line of lines) {
+        for (const line of value.split("\n")) {
           const span = document.createElement("div");
           span.textContent = line;
           valueEl.appendChild(span);
@@ -208,116 +217,6 @@
       card.appendChild(valueEl);
       container.appendChild(card);
     }
-  }
-
-  function summarizeBatchFacts(verdicts) {
-    const facts = {
-      intercepted_method: "batch",
-      simulation_status: verdicts.some((verdict) => normalizeFact(verdict, "simulation_status") === "failed")
-        ? "mixed"
-        : "confirmed",
-      source: "batch",
-      reason_codes: Array.from(new Set(verdicts.flatMap((verdict) => normalizeArray(verdict.reason_codes)))),
-      sol_changes: verdicts.flatMap((verdict) => normalizeFact(verdict, "facts").sol_changes || []).slice(0, 3),
-      token_changes: verdicts.flatMap((verdict) => normalizeFact(verdict, "facts").token_changes || []).slice(0, 3),
-      programs: Array.from(
-        new Map(
-          verdicts
-            .flatMap((verdict) => normalizeFact(verdict, "facts").programs || [])
-            .map((program) => [program.programId || program, program])
-        ).values()
-      ).slice(0, 4),
-      message_preview: ""
-    };
-
-    return facts;
-  }
-
-  function normalizeFact(verdict, key) {
-    if (key === "facts") {
-      return normalizeFacts(verdict);
-    }
-
-    const facts = normalizeFacts(verdict);
-    return facts[key] || verdict[key] || "";
-  }
-
-  function normalizeFacts(verdict) {
-    const facts = verdict?.facts && typeof verdict.facts === "object" ? verdict.facts : {};
-    return {
-      intercepted_method: facts.intercepted_method || verdict.intercepted_method || verdict.method || "",
-      simulation_status: facts.simulation_status || verdict.simulation_status || verdict.source_status || "",
-      source: facts.source || verdict.source || "",
-      reason_codes: normalizeArray(facts.reason_codes || verdict.reason_codes),
-      sol_changes: Array.isArray(facts.sol_changes) ? facts.sol_changes : Array.isArray(verdict.sol_changes) ? verdict.sol_changes : [],
-      token_changes: Array.isArray(facts.token_changes) ? facts.token_changes : Array.isArray(verdict.token_changes) ? verdict.token_changes : [],
-      programs: Array.isArray(facts.programs) ? facts.programs : Array.isArray(verdict.programs) ? verdict.programs : [],
-      message_preview: facts.message_preview || verdict.message_preview || ""
-    };
-  }
-
-  function normalizeArray(value) {
-    return Array.isArray(value) ? value.map((item) => String(item)).filter(Boolean) : [];
-  }
-
-  function normalizeRisk(value) {
-    return ["safe", "review", "danger"].includes(value) ? value : "review";
-  }
-
-  function formatSolChanges(items) {
-    return items
-      .map((item) => {
-        const delta = Number(item.deltaSol ?? item.changeSOL ?? 0);
-        const sign = delta > 0 ? "+" : "";
-        return `${sign}${delta} SOL`;
-      })
-      .join(", ");
-  }
-
-  function formatTokenChanges(items) {
-    return items
-      .map((item) => {
-        const delta = Number(item.delta ?? item.change ?? 0);
-        const sign = delta > 0 ? "+" : "";
-        const mint = item.mint ? ` ${shorten(item.mint)}` : "";
-        return `${sign}${delta}${mint}`;
-      })
-      .join(", ");
-  }
-
-  function formatPrograms(items) {
-    return items
-      .map((item) => {
-        if (typeof item === "string") {
-          return shorten(item);
-        }
-        return `${item.label || "Program"} ${shorten(item.programId || "")}`.trim();
-      })
-      .join(", ");
-  }
-
-  function formatMessagePreview(value) {
-    return String(value).trim();
-  }
-
-  function shorten(value) {
-    const text = String(value || "");
-    if (text.length <= 12) {
-      return text;
-    }
-    return `${text.slice(0, 4)}...${text.slice(-4)}`;
-  }
-
-  function phaseLabel(phase) {
-    const labels = {
-      simulate: "Simulating transaction",
-      rules: "Running deterministic checks",
-      model: "Generating explanation",
-      batch: "Analyzing batch",
-      message: "Reviewing message",
-      review: "Preparing review"
-    };
-    return labels[phase] || "Preparing";
   }
 
   function fillList(id, items, fallback) {
@@ -356,7 +255,7 @@
     block.textContent = "Block";
     proceed.disabled = false;
     proceed.className = normalizeRisk(risk);
-    proceed.textContent = normalizeRisk(risk) === "safe" ? "Proceed" : "Proceed";
+    proceed.textContent = "Proceed";
   }
 
   function activateState(activeId) {
@@ -382,5 +281,13 @@
     }
 
     console.log("[SignSafe overlay]", ...args);
+  }
+
+  function isDebugEnabled() {
+    try {
+      return Boolean(window.__SIGNSAFE_DEBUG__) || localStorage.getItem(DEBUG_STORAGE_KEY) === "1";
+    } catch (_error) {
+      return false;
+    }
   }
 })();

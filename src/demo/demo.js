@@ -1,6 +1,8 @@
 (function bootstrapDemoPage() {
-  const CHANNEL = "SIGNSAFE_OVERLAY";
-  const fixtures = window.SIGNSAFE_DEMO_TRANSACTIONS || [];
+  const CONSTANTS = globalThis.SIGNSAFE_SHARED?.constants || {};
+  const CHANNEL = CONSTANTS.OVERLAY_CHANNEL || "SIGNSAFE_OVERLAY";
+  const OVERLAY_MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES?.OVERLAY || {};
+  const fixtures = globalThis.SIGNSAFE_SHARED?.demoFixtures || window.SIGNSAFE_DEMO_TRANSACTIONS || [];
   const grid = document.getElementById("grid");
   const resultBanner = document.getElementById("result-banner");
   const iframe = document.getElementById("overlay-frame");
@@ -34,7 +36,7 @@
 
   window.addEventListener("message", (event) => {
     const message = event.data;
-    if (!message || message.channel !== CHANNEL || message.type !== "DECISION") {
+    if (!message || message.channel !== CHANNEL || message.type !== (OVERLAY_MESSAGE_TYPES.DECISION || "DECISION")) {
       return;
     }
 
@@ -59,7 +61,7 @@
       {
         channel: CHANNEL,
         sessionId: currentSessionId,
-        type: "SHOW_VERDICT",
+        type: OVERLAY_MESSAGE_TYPES.SHOW_VERDICT || "SHOW_VERDICT",
         payload: {
           verdict: fixture.verdict,
           meta: { current: 1, total: 1 }

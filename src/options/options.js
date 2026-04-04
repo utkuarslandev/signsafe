@@ -1,18 +1,20 @@
 const apiKeyInput = document.getElementById("api-key");
 const statusEl = document.getElementById("status");
 const saveButton = document.getElementById("save");
+const STORAGE_KEY =
+  globalThis.SIGNSAFE_SHARED?.constants?.STORAGE_KEYS?.OPENAI_API_KEY || "openai_api_key";
 
 restore();
 saveButton.addEventListener("click", save);
 
 async function restore() {
-  const stored = await chrome.storage.local.get("openai_api_key");
-  apiKeyInput.value = stored?.openai_api_key || "";
+  const stored = await chrome.storage.local.get(STORAGE_KEY);
+  apiKeyInput.value = stored?.[STORAGE_KEY] || "";
 }
 
 async function save() {
   await chrome.storage.local.set({
-    openai_api_key: apiKeyInput.value.trim()
+    [STORAGE_KEY]: apiKeyInput.value.trim()
   });
 
   statusEl.textContent = apiKeyInput.value.trim()
