@@ -1,5 +1,6 @@
 (function bootstrapSignSafeOverlay() {
   const CHANNEL = "SIGNSAFE_OVERLAY";
+  const DEBUG = false;
   const riskLabels = {
     safe: "Safe",
     review: "Review",
@@ -14,7 +15,9 @@
       return;
     }
 
+    debugLog("received", message.type, message.sessionId);
     currentSessionId = message.sessionId;
+    revealPanel();
 
     if (message.type === "SHOW_LOADING") {
       renderLoading(message.payload || {});
@@ -40,6 +43,7 @@
   });
 
   function emitDecision(approved, sessionId) {
+    debugLog("decision", approved, sessionId);
     window.parent.postMessage(
       {
         channel: CHANNEL,
@@ -52,6 +56,7 @@
   }
 
   function renderLoading(payload) {
+    revealPanel();
     activateState("loading-state");
     setText("loading-phase", phaseLabel(payload.phase));
     setText("loading-title", payload.title || "Analyzing transaction");
@@ -60,6 +65,7 @@
   }
 
   function renderVerdict(verdict, meta) {
+    revealPanel();
     activateState("verdict-state");
 
     const risk = normalizeRisk(verdict.risk);
@@ -103,6 +109,7 @@
   }
 
   function renderBatch(verdicts) {
+    revealPanel();
     activateState("batch-state");
 
     const combinedFacts = summarizeBatchFacts(verdicts);
@@ -356,5 +363,24 @@
     for (const state of document.querySelectorAll(".state")) {
       state.classList.toggle("hidden", state.id !== activeId);
     }
+  }
+
+  function revealPanel() {
+    const panel = document.getElementById("panel");
+    if (!panel) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      panel.classList.add("visible");
+    });
+  }
+
+  function debugLog(...args) {
+    if (!DEBUG) {
+      return;
+    }
+
+    console.log("[SignSafe overlay]", ...args);
   }
 })();

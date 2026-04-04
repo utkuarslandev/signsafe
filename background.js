@@ -1,9 +1,10 @@
 const RPC_ENDPOINT = "https://api.devnet.solana.com";
 const OPENAI_API = "https://api.openai.com/v1/responses";
 const OPENAI_MODEL = "gpt-5.4-nano";
-let DEBUG = true;
+let DEBUG = false;
 const LARGE_SOL_TRANSFER_THRESHOLD = 1;
 const VERDICT_CACHE_TTL_MS = 60_000;
+let envLocalApiKeyPromise = null;
 
 const KNOWN_PROGRAMS = {
   "11111111111111111111111111111111": "System Program",
@@ -664,7 +665,55 @@ function shorten(value) {
 
 async function getApiKey() {
   const result = await chrome.storage.local.get("openai_api_key");
-  return safeString(result?.openai_api_key);
+  const storedKey = safeString(result?.openai_api_key);
+  if (storedKey) {
+    return storedKey;
+  }
+
+  return loadApiKeyFromEnvLocal();
+}
+
+async function loadApiKeyFromEnvLocal() {
+  if (!envLocalApiKeyPromise) {
+    envLocalApiKeyPromise = (async () => {
+      try {
+        const response = await fetch(chrome.runtime.getURL(".env.local"), { cache: "no-store" });
+        if (!response.ok) {
+          debugLog("env.local not available", response.status);
+          return "";
+        }
+
+        const content = await response.text();
+        return parseEnvValue(content, "OPENAI_API_KEY");
+      } catch (error) {
+        debugLog("env.local load failed", error?.message || String(error));
+        return "";
+      }
+    })();
+  }
+
+  return envLocalApiKeyPromise;
+}
+
+function parseEnvValue(content, key) {
+  const line = String(content || "")
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .find((entry) => entry && !entry.startsWith("#") && entry.startsWith(`${key}=`));
+
+  if (!line) {
+    return "";
+  }
+
+  const rawValue = line.slice(key.length + 1).trim();
+  if (
+    (rawValue.startsWith("\"") && rawValue.endsWith("\"")) ||
+    (rawValue.startsWith("'") && rawValue.endsWith("'"))
+  ) {
+    return rawValue.slice(1, -1).trim();
+  }
+
+  return rawValue;
 }
 
 function extractOpenAIText(data) {

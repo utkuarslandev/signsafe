@@ -1,7 +1,7 @@
 (function bootstrapSignSafeContentScript() {
   const PAGE_CHANNEL = "SIGNSAFE_PAGE_BRIDGE";
   const OVERLAY_CHANNEL = "SIGNSAFE_OVERLAY";
-  const DEBUG = true;
+  const DEBUG = false;
   let analysisInProgress = false;
 
   syncDebugState();
@@ -280,9 +280,9 @@
 
   function isDebugEnabled() {
     try {
-      return true;
+      return Boolean(window.__SIGNSAFE_DEBUG__) || localStorage.getItem("signsafe-debug") === "1";
     } catch (_error) {
-      return true;
+      return false;
     }
   }
 
