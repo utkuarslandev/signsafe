@@ -1,11 +1,18 @@
-const RPC_ENDPOINT = "https://api.mainnet-beta.solana.com";
-const CLAUDE_API = "https://api.anthropic.com/v1/messages";
-const CLAUDE_MODEL = "claude-3-5-sonnet-latest";
+const RPC_ENDPOINT = "https://api.devnet.solana.com";
+const OPENAI_API = "https://api.openai.com/v1/responses";
+const OPENAI_MODEL = "gpt-5.4-mini";
+const DEBUG = true;
 
 const KNOWN_PROGRAMS = {
+  "11111111111111111111111111111111": "System Program",
+  TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA: "SPL Token",
+  ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL: "Associated Token Account",
+  TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb: "Token-2022",
+  ComputeBudget111111111111111111111111111111: "Compute Budget",
   JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4: "Jupiter",
-  "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin": "Serum",
+  srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX: "OpenBook DEX",
   CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK: "Raydium CLMM",
+  "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8": "Raydium AMM v4",
   metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s: "Metaplex"
 };
 
@@ -52,12 +59,15 @@ const DEMO_VERDICTS = {
   }
 };
 
+const verdictCache = new Map();
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message !== "object") {
     return false;
   }
 
   if (message.type === "ANALYZE_TX") {
+    debugLog("received ANALYZE_TX", message.method, sender?.url || "");
     analyzeTransaction(message.tx, {
       method: message.method || "signTransaction",
       sourceUrl: message.sourceUrl || sender?.url || ""
@@ -74,17 +84,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function analyzeTransaction(base64Tx, context) {
-  if (!base64Tx) {
+  if (!base64Tx || typeof base64Tx !== "string" || base64Tx.trim() === "") {
+    debugLog("empty or invalid transaction payload", context?.method);
     return buildReviewVerdict("Could not analyze this transaction because it could not be serialized.", [], [
       "The dApp did not provide a valid transaction payload."
     ]);
   }
 
+  if (verdictCache.has(base64Tx)) {
+    debugLog("cache hit", context?.method);
+    return verdictCache.get(base64Tx);
+  }
+
   try {
+    debugLog("simulate start", context?.method);
     const simulation = await simulateTransaction(base64Tx);
+    debugLog("simulate complete", context?.method);
     const parsed = parseSimulation(simulation, context);
-    return askClaude(parsed);
+    debugLog("openai start", context?.method);
+    const verdict = await askOpenAI(parsed);
+    debugLog("openai complete", context?.method, verdict?.risk);
+    verdictCache.set(base64Tx, verdict);
+    return verdict;
   } catch (error) {
+    debugLog("analysis failed", context?.method, error.message);
     return buildReviewVerdict(
       "Could not fully analyze this transaction. Proceed with caution.",
       [],
@@ -205,14 +228,15 @@ function extractProgramsFromLogs(logs) {
   return Array.from(seen);
 }
 
-async function askClaude(parsed) {
+async function askOpenAI(parsed) {
   const apiKey = await getApiKey();
 
   if (!apiKey) {
+    debugLog("missing openai api key");
     return buildReviewVerdict(
-      "SignSafe could not contact Claude because no API key is configured yet.",
+      "SignSafe could not contact OpenAI because no API key is configured yet.",
       buildHumanActions(parsed),
-      ["Open the extension options page and save an Anthropic API key before using live analysis."]
+      ["Open the extension options page and save an OpenAI API key before using live analysis."]
     );
   }
 
@@ -248,38 +272,32 @@ async function askClaude(parsed) {
   ].join("\n");
 
   const data = await fetchJson(
-    CLAUDE_API,
+    OPENAI_API,
     {
       method: "POST",
       headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 500,
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ]
+        model: OPENAI_MODEL,
+        input: prompt,
+        max_output_tokens: 500
       })
     },
     15000
   );
 
-  const rawText = data?.content?.[0]?.text || "";
+  const rawText = extractOpenAIText(data);
   const sanitized = rawText.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "").trim();
 
   try {
     const parsedVerdict = JSON.parse(sanitized);
     return normalizeVerdict(parsedVerdict, parsed);
   } catch (error) {
+    debugLog("failed to parse openai response");
     return buildReviewVerdict(
-      "Claude returned an unexpected response, so SignSafe could not fully verify this transaction.",
+      "OpenAI returned an unexpected response, so SignSafe could not fully verify this transaction.",
       buildHumanActions(parsed),
       ["The AI response could not be parsed into the expected verdict format."]
     );
@@ -367,8 +385,29 @@ function shorten(value) {
 }
 
 async function getApiKey() {
-  const result = await chrome.storage.local.get("anthropic_api_key");
-  return safeString(result?.anthropic_api_key);
+  const result = await chrome.storage.local.get("openai_api_key");
+  return safeString(result?.openai_api_key);
+}
+
+function extractOpenAIText(data) {
+  if (!Array.isArray(data?.output)) {
+    return "";
+  }
+
+  const parts = [];
+  for (const item of data.output) {
+    if (!Array.isArray(item?.content)) {
+      continue;
+    }
+
+    for (const content of item.content) {
+      if (content?.type === "output_text" && typeof content.text === "string") {
+        parts.push(content.text);
+      }
+    }
+  }
+
+  return parts.join("\n").trim();
 }
 
 async function fetchJson(url, options, timeoutMs) {
@@ -383,6 +422,7 @@ async function fetchJson(url, options, timeoutMs) {
 
     if (!response.ok) {
       const text = await response.text();
+      debugLog("http error", url, response.status);
       throw new Error(`HTTP ${response.status}: ${text.slice(0, 160)}`);
     }
 
@@ -390,4 +430,12 @@ async function fetchJson(url, options, timeoutMs) {
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+function debugLog(...args) {
+  if (!DEBUG) {
+    return;
+  }
+
+  console.log("[SignSafe background]", ...args);
 }

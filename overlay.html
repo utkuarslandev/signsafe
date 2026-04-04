@@ -8,7 +8,8 @@
   </head>
   <body>
     <div id="backdrop">
-      <div id="panel">
+      <div id="panel" role="dialog" aria-modal="true" aria-labelledby="loading-title">
+  <span id="focus-anchor" tabindex="-1" style="position:absolute;opacity:0;pointer-events:none"></span>
         <div id="eyebrow">SignSafe</div>
         <div id="loading-state" class="state">
           <div class="spinner" aria-hidden="true"></div>
@@ -39,8 +40,8 @@
         </div>
 
         <div id="buttons">
-          <button id="btn-block" type="button">Block</button>
-          <button id="btn-proceed" type="button">Proceed</button>
+          <button id="btn-block" type="button" aria-label="Block transaction">Block</button>
+          <button id="btn-proceed" type="button" aria-label="Proceed with transaction">Proceed</button>
         </div>
 
         <div id="footer">AI analysis helps spot risk, but it is not a guarantee. Only sign what you understand.</div>

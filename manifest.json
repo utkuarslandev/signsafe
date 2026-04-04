@@ -5,9 +5,9 @@
   "description": "Understand any Solana transaction before you sign it.",
   "permissions": ["storage", "scripting"],
   "host_permissions": [
-    "<all_urls>",
+    "https://api.devnet.solana.com/*",
     "https://api.mainnet-beta.solana.com/*",
-    "https://api.anthropic.com/*"
+    "https://api.openai.com/*"
   ],
   "background": {
     "service_worker": "background.js"

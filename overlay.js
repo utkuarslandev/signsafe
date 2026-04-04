@@ -32,18 +32,20 @@
   });
 
   document.getElementById("btn-block").addEventListener("click", () => {
-    emitDecision(false);
+    const sid = currentSessionId;
+    emitDecision(false, sid);
   });
 
   document.getElementById("btn-proceed").addEventListener("click", () => {
-    emitDecision(true);
+    const sid = currentSessionId;
+    emitDecision(true, sid);
   });
 
-  function emitDecision(approved) {
+  function emitDecision(approved, sessionId) {
     window.parent.postMessage(
       {
         channel: CHANNEL,
-        sessionId: currentSessionId,
+        sessionId,
         type: "DECISION",
         approved
       },
@@ -57,7 +59,9 @@
     document.getElementById("loading-detail").textContent =
       payload?.detail || "Simulating on-chain effects and preparing a plain-English verdict.";
     document.getElementById("btn-proceed").disabled = true;
-    document.getElementById("btn-block").disabled = true;
+    const blockBtn = document.getElementById("btn-block");
+    blockBtn.disabled = false;
+    blockBtn.textContent = "Cancel";
   }
 
   function renderVerdict(verdict, meta) {
@@ -91,6 +95,7 @@
     proceed.disabled = false;
     proceed.className = risk;
     document.getElementById("btn-block").disabled = false;
+    document.getElementById("btn-block").textContent = "Block";
   }
 
   function renderBatch(verdicts) {
@@ -108,6 +113,7 @@
     proceed.disabled = false;
     proceed.className = "safe";
     document.getElementById("btn-block").disabled = false;
+    document.getElementById("btn-block").textContent = "Block";
   }
 
   function fillList(id, items, fallback) {

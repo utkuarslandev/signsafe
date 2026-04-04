@@ -1,6 +1,8 @@
 (function bootstrapSignSafeContentScript() {
   const PAGE_CHANNEL = "SIGNSAFE_PAGE_BRIDGE";
   const OVERLAY_CHANNEL = "SIGNSAFE_OVERLAY";
+  const DEBUG = true;
+  let analysisInProgress = false;
 
   injectPageHook();
 
@@ -14,7 +16,27 @@
       return;
     }
 
+    debugLog("received page analyze request", message.method, message.providerLabel);
+
+    if (analysisInProgress) {
+      debugLog("rejecting overlapping analysis", message.method, message.providerLabel);
+      window.postMessage(
+        {
+          channel: PAGE_CHANNEL,
+          type: "ANALYZE_RESPONSE",
+          requestId: message.requestId,
+          approved: false,
+          error: "Another SignSafe analysis is already in progress."
+        },
+        "*"
+      );
+      return;
+    }
+
+    analysisInProgress = true;
     const response = await handleAnalyzeRequest(message);
+    analysisInProgress = false;
+    debugLog("sending page analyze response", message.method, response.approved);
     window.postMessage(
       {
         channel: PAGE_CHANNEL,
@@ -32,12 +54,40 @@
     script.dataset.signsafe = "true";
     script.onload = () => script.remove();
     (document.head || document.documentElement).appendChild(script);
+    debugLog("injected page hook");
   }
 
   async function handleAnalyzeRequest(message) {
+    if (message.isSignMessage) {
+      const session = createOverlaySession();
+      try {
+        debugLog("showing signMessage overlay");
+        const approved = await session.showVerdict(
+          {
+            risk: "review",
+            summary: "A dApp is requesting your wallet signature on a raw message.",
+            actions: [
+              "Sign arbitrary bytes that could represent any off-chain action.",
+              "This is not a transaction — no on-chain simulation is available."
+            ],
+            risk_reasons: [
+              "signMessage is often used in phishing attacks to capture blind signatures.",
+              "Only approve if you initiated this action and trust the dApp."
+            ],
+            verdict: "Only sign if you understand what you are authorizing."
+          },
+          { current: 1, total: 1 }
+        );
+        return { approved };
+      } finally {
+        session.close();
+      }
+    }
+
     const session = createOverlaySession();
 
     try {
+      debugLog("showing loading overlay", message.method, message.transactions.length);
       await session.showLoading({
         title:
           message.transactions.length > 1
@@ -46,17 +96,17 @@
         detail: "Simulating on-chain effects and preparing a plain-English verdict."
       });
 
-      const verdicts = [];
-      for (const tx of message.transactions) {
-        verdicts.push(
-          await sendRuntimeMessage({
+      const verdicts = await Promise.all(
+        message.transactions.map((tx) =>
+          sendRuntimeMessage({
             type: "ANALYZE_TX",
             tx,
             method: message.method,
             sourceUrl: message.sourceUrl
           })
-        );
-      }
+        )
+      );
+      debugLog("received verdicts", verdicts.length);
 
       if (message.transactions.length === 1) {
         const approved = await session.showVerdict(verdicts[0], {
@@ -99,8 +149,10 @@
 
   function sendRuntimeMessage(payload) {
     return new Promise((resolve) => {
+      debugLog("sending runtime message", payload.type, payload.method);
       chrome.runtime.sendMessage(payload, (response) => {
         if (chrome.runtime.lastError) {
+          debugLog("runtime error", chrome.runtime.lastError.message);
           resolve({
             risk: "review",
             summary: "The extension could not reach its background worker.",
@@ -111,6 +163,7 @@
           return;
         }
 
+        debugLog("runtime response", payload.type, payload.method);
         resolve(response);
       });
     });
@@ -176,19 +229,31 @@
 
     return {
       showLoading(payload) {
+        debugLog("overlay loading");
         return post({ type: "SHOW_LOADING", payload });
       },
       showVerdict(verdict, meta) {
+        debugLog("overlay verdict", verdict?.risk, meta?.current, meta?.total);
         return awaitDecision("SHOW_VERDICT", { verdict, meta });
       },
       showBatchSummary(verdicts) {
+        debugLog("overlay batch summary", verdicts.length);
         return awaitDecision("SHOW_BATCH", { verdicts });
       },
       close() {
         if (iframe.isConnected) {
+          debugLog("overlay closed");
           iframe.remove();
         }
       }
     };
+  }
+
+  function debugLog(...args) {
+    if (!DEBUG) {
+      return;
+    }
+
+    console.log("[SignSafe content]", ...args);
   }
 })();

@@ -50,6 +50,8 @@ button {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 246, 243, 0.98));
   box-shadow: var(--panel-shadow);
   border: 1px solid rgba(255, 255, 255, 0.6);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 #eyebrow {

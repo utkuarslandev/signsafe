@@ -74,11 +74,14 @@
     <main>
       <h1>SignSafe Settings</h1>
       <p>
-        Save an Anthropic API key here to enable live transaction analysis. The key is stored locally in
+        Save an OpenAI API key here to enable live transaction analysis. The key is stored locally in
         <code>chrome.storage.local</code>.
       </p>
-      <label for="api-key">Anthropic API key</label>
-      <input id="api-key" type="password" placeholder="sk-ant-..." autocomplete="off" />
+      <p style="color:#8f5b00; background:#fff0bf; border-radius:10px; padding:10px 14px; font-size:13px;">
+        Use a project-scoped OpenAI key with a spend limit. Never share or commit your API key.
+      </p>
+      <label for="api-key">OpenAI API key</label>
+      <input id="api-key" type="password" placeholder="sk-..." autocomplete="off" />
       <button id="save" type="button">Save key</button>
       <div id="status"></div>
     </main>

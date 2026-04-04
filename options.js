@@ -6,13 +6,13 @@ restore();
 saveButton.addEventListener("click", save);
 
 async function restore() {
-  const stored = await chrome.storage.local.get("anthropic_api_key");
-  apiKeyInput.value = stored?.anthropic_api_key || "";
+  const stored = await chrome.storage.local.get("openai_api_key");
+  apiKeyInput.value = stored?.openai_api_key || "";
 }
 
 async function save() {
   await chrome.storage.local.set({
-    anthropic_api_key: apiKeyInput.value.trim()
+    openai_api_key: apiKeyInput.value.trim()
   });
 
   statusEl.textContent = apiKeyInput.value.trim()
