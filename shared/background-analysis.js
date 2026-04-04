@@ -37,30 +37,22 @@
       }
 
       try {
-        if (typeof shared.txDecode?.decodeTransactionShadow === "function") {
-          try {
-            const shadow = shared.txDecode.decodeTransactionShadow(base64Tx);
-            if (shadow.ok) {
-              debugLog(
-                "tx_decode_shadow",
-                context?.method,
-                shadow.instructionCount,
-                shadow.programIds?.length ?? 0,
-                shadow.accountKeysError || ""
-              );
-            } else {
-              debugLog("tx_decode_shadow_error", context?.method, shadow.error);
-            }
-          } catch (decodeErr) {
-            debugLog("tx_decode_shadow_failed", context?.method, decodeErr?.message || String(decodeErr));
-          }
-        }
-
         debugLog("simulate start", context?.method);
         const simulation = await simulateTransaction(base64Tx);
         debugLog("simulate complete", context?.method);
         const parsed = parseSimulation(simulation, context);
-        const heuristics = evaluateRisk(parsed);
+
+        let shadow = { ok: false };
+        if (typeof shared.txDecode?.decodeTransactionShadow === "function") {
+          try {
+            shadow = shared.txDecode.decodeTransactionShadow(base64Tx);
+            debugLog("tx_decode_shadow", context?.method, shadow.instructionCount, shadow.programIds?.length ?? 0, shadow.accountKeysError || "");
+          } catch (_decodeErr) {
+            debugLog("tx_decode_shadow_failed", context?.method, _decodeErr?.message || String(_decodeErr));
+          }
+        }
+
+        const heuristics = evaluateRisk(parsed, shadow);
 
         let verdict = heuristics.baseVerdict;
         if (shouldAskModel(heuristics)) {
@@ -199,7 +191,7 @@
       return Array.from(seen);
     }
 
-    function evaluateRisk(parsed) {
+    function evaluateRisk(parsed, shadow) {
       const facts = buildFacts(parsed);
       const reasonCodes = [];
       const riskReasons = [];
@@ -239,6 +231,50 @@
       if (facts.message_preview) {
         risk = maxRisk(risk, "review");
         addReason(reasonCodes, riskReasons, "raw_message_signature", "A raw message signature cannot be simulated on-chain.");
+      }
+
+      // Per-instruction semantic signals from shadow decode
+      if (shadow?.ok && Array.isArray(shadow.semantics)) {
+        const semTypes = shadow.semantics.map((s) => s.semantic?.type).filter(Boolean);
+
+        // Pure SOL drain: all instructions are TRANSFER, SOL leaves, no token received
+        const allTransfers =
+          shadow.semantics.length > 0 &&
+          shadow.semantics.every((s) => s.semantic?.type === "TRANSFER");
+        if (allTransfers && facts.totalSolOut > 0.001 && facts.totalTokenIn === 0) {
+          risk = maxRisk(risk, "danger");
+          addReason(reasonCodes, riskReasons, "sol_drain",
+            "SOL is transferred out of your wallet with no asset received in return.");
+        }
+
+        // Hidden injection: memo decoy bundled with a SOL transfer
+        const hasMemo = shadow.semantics.some((s) => s.semantic?.family === "memo");
+        if (hasMemo && semTypes.includes("TRANSFER")) {
+          risk = maxRisk(risk, "danger");
+          addReason(reasonCodes, riskReasons, "hidden_instruction",
+            "A SOL transfer is bundled with a memo — the memo makes the transaction appear as a swap while hiding the fund movement.");
+        }
+
+        // Account ownership reassignment
+        if (semTypes.includes("ASSIGN")) {
+          risk = maxRisk(risk, "danger");
+          addReason(reasonCodes, riskReasons, "system_assign",
+            "Transaction reassigns account ownership to another program.");
+        }
+
+        // Durable nonce — no expiry
+        if (semTypes.includes("ADVANCE_NONCE_ACCOUNT")) {
+          risk = maxRisk(risk, "review");
+          addReason(reasonCodes, riskReasons, "durable_nonce",
+            "Transaction uses a durable nonce — no expiry, can be submitted at any future time.");
+        }
+
+        // Rent redirect via close
+        if (semTypes.includes("CLOSE_ACCOUNT")) {
+          risk = maxRisk(risk, "review");
+          addReason(reasonCodes, riskReasons, "close_account_rent",
+            "An account is closed and its rent lamports are redirected.");
+        }
       }
 
       const summary = buildHeuristicSummary(parsed, facts, reasonCodes);
