@@ -6,6 +6,7 @@
   const OVERLAY_MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES?.OVERLAY || {};
   const RUNTIME_MESSAGE_TYPES = CONSTANTS.MESSAGE_TYPES?.RUNTIME || {};
   const DEBUG_STORAGE_KEY = CONSTANTS.DEBUG_STORAGE_KEY || "signsafe-debug";
+  const ANALYZE_TX_TIMEOUT_MS = 20_000;
   const DEBUG = isDebugEnabled();
   const createOverlaySession = globalThis.SIGNSAFE_CONTENT?.createOverlaySession;
   let analysisInProgress = false;
@@ -196,8 +197,32 @@
 
   function sendRuntimeMessage(payload) {
     return new Promise((resolve) => {
+      let settled = false;
+      const timeoutId = setTimeout(() => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        debugLog("runtime timeout", payload.type, payload.method);
+        resolve({
+          risk: "review",
+          summary: "SignSafe analysis timed out before the background worker returned a result.",
+          actions: ["Retry the transaction if you still want SignSafe to inspect it."],
+          risk_reasons: ["Background analysis timed out."],
+          verdict: "Proceed only if you can independently verify this transaction."
+        });
+      }, ANALYZE_TX_TIMEOUT_MS);
+
       debugLog("sending runtime message", payload.type, payload.method);
       chrome.runtime.sendMessage(payload, (response) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        clearTimeout(timeoutId);
+
         if (chrome.runtime.lastError) {
           debugLog("runtime error", chrome.runtime.lastError.message);
           resolve({

@@ -127,6 +127,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then(verdict => {
         if (tabId != null) setTabIcon(tabId, verdict.risk);
         sendResponse(verdict);
+      })
+      .catch((error) => {
+        debugLog("unhandled analysis error", message.method, error?.message || String(error));
+        sendResponse(
+          analysisService.buildReviewVerdict(
+            "Could not complete transaction analysis. Proceed with caution.",
+            analysisService.buildFallbackFacts({
+              method: message.method || "signTransaction",
+              sourceUrl: message.sourceUrl || sender?.url || ""
+            }),
+            ["analysis_error"],
+            {
+              riskReasons: [error?.message || "Unknown background analysis error."],
+              interceptedMethod: message.method || "signTransaction"
+            }
+          )
+        );
       });
     return true;
   }
