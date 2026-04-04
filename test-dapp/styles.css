@@ -1,5 +1,26 @@
 /* Fonts loaded via <link> tags in index.html */
 
+:root {
+  color-scheme: dark;
+  --bg: #060608;
+  --surface: #0d0d10;
+  --surface-2: #141418;
+  --border: #1c1c22;
+  --border-2: #252530;
+  --text: #f0f0f4;
+  --muted: #5a5a6e;
+  --muted-2: #3a3a4a;
+  --red: #ef3a3a;
+  --red-dim: rgba(239,58,58,0.13);
+  --red-border: rgba(239,58,58,0.22);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.09);
+  --green-border: rgba(34,197,94,0.20);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.09);
+  --amber-border: rgba(245,158,11,0.22);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -8,35 +29,54 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  overflow-x: hidden;
   font-family: "Geist", "Inter", "Segoe UI", sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 50% 32% at 50% 0%, rgba(239,58,58,0.08), transparent 72%),
+    radial-gradient(ellipse 36% 26% at 12% 88%, rgba(239,58,58,0.05), transparent 78%),
+    var(--bg);
 }
 
 code {
-  padding: 0.1rem 0.35rem;
-  border-radius: 5px;
+  padding: 0.18rem 0.45rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
   font-family: "JetBrains Mono", "Fira Code", monospace;
-  font-size: 0.875em;
+  font-size: 0.8em;
   background: var(--surface-2);
-  color: var(--muted);
+  color: var(--text);
 }
 
 .shell {
-  width: min(980px, calc(100% - 32px));
+  width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 36px 0 48px;
+  padding: 28px 0 48px;
 }
 
 .hero {
-  margin-bottom: 20px;
+  position: relative;
+  margin-bottom: 22px;
+  padding: 10px 0 0;
+}
+
+.hero-glow {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(760px, 100%);
+  height: 260px;
+  background: radial-gradient(ellipse, rgba(239,58,58,0.11) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.85;
 }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 12px;
+  margin: 0 0 18px;
   color: var(--red);
   font-family: "JetBrains Mono", monospace;
   font-size: 11px;
@@ -45,14 +85,24 @@ code {
   text-transform: uppercase;
 }
 
+.eyebrow::before,
+.eyebrow::after {
+  content: "";
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--red);
+  opacity: 0.45;
+}
+
 .eyebrow-icon {
   width: 18px;
   height: 18px;
-  line-height: 1;
-  letter-spacing: normal;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
+  letter-spacing: normal;
 }
 
 .eyebrow-icon img {
@@ -62,50 +112,109 @@ code {
 }
 
 h1 {
-  margin: 0 0 10px;
-  font-size: clamp(28px, 4vw, 48px);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+  margin: 0 0 14px;
+  max-width: 720px;
+  font-family: "DM Serif Display", serif;
+  font-size: clamp(32px, 6vw, 58px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
   color: var(--text);
 }
 
 .intro {
   max-width: 760px;
-  margin: 0;
+  margin: 0 0 22px;
   color: var(--muted);
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.hero-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.hero-stat {
+  padding: 18px 20px;
+  background: rgba(13,13,16,0.78);
+  backdrop-filter: blur(18px);
+}
+
+.hero-stat-label,
+.section-label {
+  margin-bottom: 10px;
+  color: var(--muted-2);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hero-stat-value {
+  color: var(--text);
+  font-family: "DM Serif Display", serif;
+  font-size: 19px;
+  line-height: 1.1;
 }
 
 .panel {
-  margin-top: 18px;
-  padding: 24px;
+  position: relative;
+  margin-top: 16px;
+  padding: 22px;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 22%),
+    var(--surface);
+  box-shadow: 0 32px 90px rgba(0,0,0,0.46), 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: var(--border-2);
+  opacity: 0.75;
 }
 
 .meta-grid {
   display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.meta-card {
+  min-height: 98px;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
 }
 
 .label {
-  margin-bottom: 6px;
-  color: var(--muted);
+  margin-bottom: 12px;
+  color: var(--muted-2);
   font-family: "JetBrains Mono", monospace;
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
 .value {
-  min-height: 24px;
-  font-size: 14px;
+  min-height: 36px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--text);
   word-break: break-word;
@@ -115,31 +224,35 @@ h1 {
 .button-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-top: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin-top: 18px;
 }
 
 button {
-  min-height: 46px;
-  padding: 0 16px;
-  border: none;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--red-border);
   border-radius: 10px;
-  background: var(--red);
+  background: var(--red-dim);
   color: #fff;
-  font-family: "JetBrains Mono", monospace;
-  font: inherit;
   font-family: "JetBrains Mono", monospace;
   font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.03em;
   cursor: pointer;
   transition:
     transform 120ms ease,
     opacity 120ms ease,
-    background 120ms ease;
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 button:hover {
-  background: #ff4545;
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 10px 24px rgba(239,58,58,0.18);
   transform: translateY(-1px);
 }
 
@@ -150,37 +263,50 @@ button:disabled {
 }
 
 .ghost {
-  min-height: 36px;
+  min-height: 38px;
   padding: 0 14px;
   border: 1px solid var(--border-2);
   border-radius: 8px;
-  background: var(--surface-2);
+  background: transparent;
   color: var(--muted);
 }
 
 .ghost:hover {
-  background: var(--border);
-  border-color: var(--border-2);
+  background: var(--surface-2);
+  border-color: var(--muted);
   color: var(--text);
-  transform: none;
+  box-shadow: none;
+  transform: translateY(-1px);
 }
 
 .notes {
-  margin-top: 22px;
+  margin-top: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(20,20,24,0.55);
   color: var(--muted);
   font-size: 13px;
   line-height: 1.7;
 }
 
 .notes p {
-  margin: 0 0 8px;
+  margin: 0 0 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--text);
 }
 
 .notes ul {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 18px;
+}
+
+.notes li + li {
+  margin-top: 6px;
 }
 
 .log-header {
@@ -188,39 +314,54 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  margin-bottom: 14px;
 }
 
 .log-header h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-family: "DM Serif Display", serif;
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 400;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .log-output {
-  min-height: 260px;
-  margin: 16px 0 0;
-  padding: 18px;
+  min-height: 220px;
+  margin: 0;
+  padding: 16px 18px;
   overflow: auto;
   border-radius: 12px;
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  color: var(--muted);
+  color: #c9ccd4;
   font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
   font-size: 12px;
   line-height: 1.6;
   white-space: pre-wrap;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .shell {
-    width: min(100% - 20px, 980px);
-    padding-top: 24px;
+    width: min(100% - 20px, 1120px);
+    padding-top: 20px;
+  }
+
+  .hero-strip {
+    grid-template-columns: 1fr;
   }
 
   .panel {
     padding: 18px;
     border-radius: 14px;
+  }
+
+  .meta-card {
+    min-height: 0;
+  }
+
+  .value {
+    min-height: 0;
+    font-size: 16px;
   }
 }

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SignSafe — See What You're Signing</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -13,7 +15,7 @@ html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--text);font-family:'Geist',sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;}
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;border-bottom:1px solid var(--border);background:rgba(6,6,8,0.88);backdrop-filter:blur(20px);}
 .logo{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--text);text-decoration:none;}
-.logo-mark{width:28px;height:28px;border:1.5px solid var(--red);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--red);}
+.logo-mark{width:28px;height:28px;display:block;flex-shrink:0;}
 .nav-links{display:flex;align-items:center;gap:32px;}
 .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .2s;}
 .nav-links a:hover{color:var(--text);}
@@ -122,13 +124,12 @@ h2 em{font-style:italic;}
 .beta-panel::before{content:'';position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(239,58,58,.8),transparent);}
 .beta-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:16px;cursor:pointer;transition:all .2s;}
 .beta-close:hover{color:var(--text);border-color:var(--border-2);}
+.beta-brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px;}
+.beta-brand-mark{width:28px;height:28px;display:block;flex-shrink:0;}
+.beta-brand-text{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text);}
 .beta-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:16px;}
 .beta-panel h3{font-family:'DM Serif Display',serif;font-size:38px;font-weight:400;line-height:1.08;letter-spacing:-.02em;margin-bottom:14px;padding-right:40px;}
 .beta-copy{font-size:15px;line-height:1.75;color:var(--muted);margin-bottom:24px;max-width:420px;}
-.beta-points{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px;}
-.beta-point{border-radius:12px;border:1px solid var(--border);background:var(--surface-2);padding:12px 14px;}
-.beta-point-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);margin-bottom:6px;}
-.beta-point-value{font-size:13px;line-height:1.5;color:var(--text);}
 .beta-form{display:flex;flex-direction:column;gap:12px;}
 .beta-field{display:flex;flex-direction:column;gap:7px;text-align:left;}
 .beta-field label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);}
@@ -136,7 +137,6 @@ h2 em{font-style:italic;}
 .beta-field input:focus{border-color:rgba(239,58,58,.45);box-shadow:0 0 0 3px rgba(239,58,58,.08);}
 .beta-form-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;}
 .beta-submit{min-width:150px;}
-.beta-footnote{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.7;color:var(--muted-2);}
 .beta-status{min-height:18px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
 .beta-status.success{color:var(--green);}
 .beta-status.error{color:var(--red);}
@@ -150,17 +150,16 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
 .footer-note{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-2);}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 .hero{animation:slideUp .6s ease both;}
-@media(max-width:768px){nav{padding:0 20px;}.nav-links{display:none;}.hero,section,.problem-section,.cta-section{padding:80px 20px;}.steps,.risk-grid,.beta-points,.beta-form-row{grid-template-columns:1fr;}.problem-section{grid-template-columns:1fr;}.stat-strip-inner{grid-template-columns:1fr;padding:0 20px;}.stat-item{border-right:none;border-bottom:1px solid var(--border);padding:32px 0;}.beta-panel{padding:24px 20px;}.beta-panel h3{font-size:32px;}.beta-submit{width:100%;}footer{flex-direction:column;gap:12px;padding:32px 20px;}}
+@media(max-width:768px){nav{padding:0 20px;}.nav-links{display:none;}.hero,section,.problem-section,.cta-section{padding:80px 20px;}.steps,.risk-grid,.beta-form-row{grid-template-columns:1fr;}.problem-section{grid-template-columns:1fr;}.stat-strip-inner{grid-template-columns:1fr;padding:0 20px;}.stat-item{border-right:none;border-bottom:1px solid var(--border);padding:32px 0;}.beta-panel{padding:24px 20px;}.beta-panel h3{font-size:32px;}.beta-submit{width:100%;}footer{flex-direction:column;gap:12px;padding:32px 20px;}}
 </style>
 </head>
 <body>
 
 <nav>
-  <a class="logo" href="#"><div class="logo-mark">&#x2715;</div>SignSafe</a>
+  <a class="logo" href="#"><img class="logo-mark" src="icon.svg" alt="SignSafe icon">SignSafe</a>
   <div class="nav-links">
     <a href="#how">How it works</a>
     <a href="#risk">Risk levels</a>
-    <a href="#" target="_blank">GitHub</a>
     <button type="button" class="btn-chrome cta-button" data-open-beta>Join beta</button>
   </div>
 </nav>
@@ -255,14 +254,10 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
 <div class="beta-modal" id="beta-modal" aria-hidden="true">
   <div class="beta-panel" role="dialog" aria-modal="true" aria-labelledby="beta-title">
     <button type="button" class="beta-close" id="beta-close" aria-label="Close beta form">&times;</button>
+    <div class="beta-brand"><img class="beta-brand-mark" src="icon.svg" alt="SignSafe icon"><div class="beta-brand-text">SignSafe</div></div>
     <div class="beta-eyebrow">Founding beta</div>
     <h3 id="beta-title">Join the first wave.</h3>
     <p class="beta-copy">We are inviting a small group of Solana users who want sharper transaction warnings before signing. Leave your email and we will send early access when the beta opens.</p>
-    <div class="beta-points">
-      <div class="beta-point"><div class="beta-point-label">Access</div><div class="beta-point-value">Private builds before store launch</div></div>
-      <div class="beta-point"><div class="beta-point-label">Focus</div><div class="beta-point-value">Wallet safety for real dApp flows</div></div>
-      <div class="beta-point"><div class="beta-point-label">Feedback</div><div class="beta-point-value">Direct line for false positives and misses</div></div>
-    </div>
     <form class="beta-form" id="beta-form" action="https://formspree.io/f/your-form_id" method="POST">
       <div class="beta-form-row">
         <div class="beta-field">
@@ -274,7 +269,6 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
       <input type="hidden" name="product" value="SignSafe Beta">
       <input type="hidden" name="source" value="Landing Page Popover">
       <div class="beta-status" id="beta-status" aria-live="polite"></div>
-      <div class="beta-footnote">Replace <code>your-form_id</code> with your Formspree endpoint in this file before launch.</div>
     </form>
     <div class="beta-success" id="beta-success">
       <h4>You're on the list.</h4>
