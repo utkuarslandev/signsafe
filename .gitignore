@@ -1,8 +1,5 @@
-.env.local
-.codex
-.claude
-.wrangler/
-landing/node_modules/
-landing/out/
-landing/.next/
-api/
+*
+!/.gitignore
+!/api/
+!/extension/
+!/landing/
