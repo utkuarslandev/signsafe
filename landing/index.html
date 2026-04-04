@@ -112,6 +112,29 @@ h2 em{font-style:italic;}
 .risk-examples{display:flex;flex-direction:column;gap:6px;}
 .risk-ex{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-2);display:flex;align-items:center;gap:6px;}
 .risk-ex::before{content:'→';}
+.faq-section{scroll-margin-top:84px;}
+.faq-layout{display:grid;gap:28px;margin-top:48px;}
+.faq-category{border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden;}
+.faq-category-head{display:flex;align-items:center;gap:10px;padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface-2);}
+.faq-category-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.faq-category-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.faq-list{display:flex;flex-direction:column;}
+.faq-item{border-bottom:1px solid var(--border);}
+.faq-item:last-child{border-bottom:none;}
+.faq-question{width:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 22px;border:none;background:transparent;color:var(--text);text-align:left;cursor:pointer;font-size:14px;line-height:1.65;font-weight:500;transition:background .2s ease;}
+.faq-question:hover{background:rgba(255,255,255,.015);}
+.faq-chevron{width:16px;height:16px;flex-shrink:0;color:var(--muted);margin-top:4px;transition:transform .2s ease;}
+.faq-item.open .faq-chevron{transform:rotate(180deg);}
+.faq-answer{display:none;padding:0 22px 20px;font-size:14px;line-height:1.75;color:var(--muted);}
+.faq-item.open .faq-answer{display:block;animation:slideUp .2s ease both;}
+.faq-answer p{margin-bottom:12px;}
+.faq-answer p:last-child{margin-bottom:0;}
+.faq-code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);background:var(--surface-2);border:1px solid var(--border-2);border-radius:4px;padding:2px 6px;white-space:nowrap;}
+.faq-callout{padding:10px 12px;border-left:2px solid;border-radius:0 8px 8px 0;background:var(--surface-2);font-size:13px;line-height:1.7;margin-top:10px;}
+.faq-callout.good{border-color:var(--green);color:#b5d7c0;}
+.faq-callout.warn{border-color:var(--amber);color:#d8bf8a;}
+.faq-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.faq-badge{font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid rgba(34,197,94,.2);background:var(--green-dim);color:var(--green);}
 .cta-section{padding:160px 40px;text-align:center;position:relative;max-width:1100px;margin:0 auto;}
 .cta-glow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(239,58,58,.06) 0%,transparent 70%);pointer-events:none;}
 .cta-section h2{max-width:700px;margin:0 auto 24px;}
@@ -150,7 +173,7 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
 .footer-note{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-2);}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 .hero{animation:slideUp .6s ease both;}
-@media(max-width:768px){nav{padding:0 20px;}.nav-links{display:none;}.hero,section,.problem-section,.cta-section{padding:80px 20px;}.steps,.risk-grid,.beta-form-row{grid-template-columns:1fr;}.problem-section{grid-template-columns:1fr;}.stat-strip-inner{grid-template-columns:1fr;padding:0 20px;}.stat-item{border-right:none;border-bottom:1px solid var(--border);padding:32px 0;}.beta-panel{padding:24px 20px;}.beta-panel h3{font-size:32px;}.beta-submit{width:100%;}footer{flex-direction:column;gap:12px;padding:32px 20px;}}
+@media(max-width:768px){nav{padding:0 20px;}.nav-links{display:none;}.hero,section,.problem-section,.cta-section{padding:80px 20px;}.steps,.risk-grid,.beta-form-row{grid-template-columns:1fr;}.problem-section{grid-template-columns:1fr;}.stat-strip-inner{grid-template-columns:1fr;padding:0 20px;}.stat-item{border-right:none;border-bottom:1px solid var(--border);padding:32px 0;}.faq-layout{gap:18px;}.faq-category-head{padding:16px 16px;}.faq-question{padding:16px 16px;font-size:13px;}.faq-answer{padding:0 16px 16px;font-size:13px;}.faq-callout{font-size:12px;}.beta-panel{padding:24px 20px;}.beta-panel h3{font-size:32px;}.beta-submit{width:100%;}footer{flex-direction:column;gap:12px;padding:32px 20px;}}
 </style>
 </head>
 <body>
@@ -160,6 +183,7 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
   <div class="nav-links">
     <a href="#how">How it works</a>
     <a href="#risk">Risk levels</a>
+    <a href="#faq">FAQ</a>
     <button type="button" class="btn-chrome cta-button" data-open-beta>Join beta</button>
   </div>
 </nav>
@@ -234,6 +258,202 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
     <div class="risk-card safe"><div class="risk-indicator"><div class="risk-dot safe"></div><span class="rlt safe">Safe</span></div><h3>All clear</h3><p>Recognized programs, expected balance changes, simulation succeeded with no anomalies.</p><div class="risk-examples"><div class="risk-ex">Jupiter swap on known pair</div><div class="risk-ex">SOL transfer to saved address</div><div class="risk-ex">Metaplex NFT mint</div></div></div>
     <div class="risk-card review"><div class="risk-indicator"><div class="risk-dot review"></div><span class="rlt review">Review</span></div><h3>Proceed with care</h3><p>Unknown programs, first interactions, or large SOL movements that warrant a second look.</p><div class="risk-examples"><div class="risk-ex">Program deployed &lt; 7 days ago</div><div class="risk-ex">Large SOL movement (&gt; 1 SOL)</div><div class="risk-ex">First interaction with a contract</div></div></div>
     <div class="risk-card danger"><div class="risk-indicator"><div class="risk-dot danger"></div><span class="rlt danger">Danger</span></div><h3>Block immediately</h3><p>Drainer patterns, hidden transfers, unlimited token approvals to unverified programs, or simulation errors.</p><div class="risk-examples"><div class="risk-ex">Token drain to unknown wallet</div><div class="risk-ex">Hidden instructions after swap</div><div class="risk-ex">Unlimited token approval request</div></div></div>
+  </div>
+</section>
+
+<section id="faq" class="faq-section">
+  <div class="section-label">FAQ</div>
+  <h2>Questions users ask<br><em>before trusting us.</em></h2>
+  <p class="lead">Everything below is based on how SignSafe currently works: wallet interception, simulation-first analysis, and user-controlled blocking.</p>
+  <div class="faq-layout">
+    <div class="faq-category">
+      <div class="faq-category-head">
+        <span class="faq-category-dot" style="background:var(--red);"></span>
+        <span class="faq-category-title">Is SignSafe itself safe?</span>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-1" id="faq-q-1">
+            <span>This sounds exactly like a wallet drainer - an extension that intercepts my transactions. How is this different?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-1" role="region" aria-labelledby="faq-q-1">
+            <p>You are right to ask - and we are glad you did. The attack vector is identical. The Crypto Copilot extension used the exact same <span class="faq-code">signTransaction</span> interception technique we use. The difference is intent and verifiability.</p>
+            <p>SignSafe is fully open source. Every line of code is on GitHub. You can read the content script, the background worker, and the overlay - all three files total less than 400 lines. There is no obfuscation, no backend, no remote code execution.</p>
+            <div class="faq-callout good">SignSafe never modifies transactions. It calls Solana's public RPC to simulate, calls AI to explain, then passes the original transaction through unchanged - or throws an error if you block it. We cannot alter what you sign.</div>
+            <div class="faq-badges">
+              <span class="faq-badge">Open source</span>
+              <span class="faq-badge">No backend</span>
+              <span class="faq-badge">Read-only RPC</span>
+              <span class="faq-badge">Zero transaction modification</span>
+            </div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-2" id="faq-q-2">
+            <span>Can SignSafe see my private keys or seed phrase?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-2" role="region" aria-labelledby="faq-q-2">
+            <p>No. SignSafe never has access to your keys, seed phrase, or wallet internals. It only sees what any dApp on the internet already sees: the serialized unsigned transaction that the dApp sends to your wallet for signing.</p>
+            <p>Your private keys never leave Phantom, Backpack, or whatever wallet you use. They are stored encrypted inside the wallet extension and are never exposed to content scripts like ours. SignSafe intercepts the transaction request, not the signing process itself.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-3" id="faq-q-3">
+            <span>Does SignSafe send my transaction data to a server?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-3" role="region" aria-labelledby="faq-q-3">
+            <p>Two external calls are made when you initiate a transaction.</p>
+            <p><strong>1.</strong> <span class="faq-code">simulateTransaction</span> sent to Solana's public RPC endpoint (<span class="faq-code">api.mainnet-beta.solana.com</span>). This is the same call any dApp or wallet makes when estimating fees. It contains no identifying information.</p>
+            <p><strong>2.</strong> The simulation result (balance changes, program IDs, logs) sent to the Claude API for plain-English analysis. No wallet addresses, no private keys, no browsing history - only the on-chain effect of the transaction.</p>
+            <p>There is no SignSafe backend. No analytics, no telemetry, no user tracking. The extension has no server of its own.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-4" id="faq-q-4">
+            <span>What permissions does the extension require?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-4" role="region" aria-labelledby="faq-q-4">
+            <p>Three permissions: <span class="faq-code">storage</span> (to save your settings), <span class="faq-code">scripting</span> (to inject the proxy into pages), and <span class="faq-code">activeTab</span> (to detect which site is requesting a transaction).</p>
+            <p>We do not request <span class="faq-code">history</span>, <span class="faq-code">tabs</span>, <span class="faq-code">cookies</span>, <span class="faq-code">bookmarks</span>, or any permission that would let us see what you are doing outside of a transaction request.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-category">
+      <div class="faq-category-head">
+        <span class="faq-category-dot" style="background:var(--amber);"></span>
+        <span class="faq-category-title">How it works</span>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-5" id="faq-q-5">
+            <span>Will SignSafe slow down my transactions or add latency?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-5" role="region" aria-labelledby="faq-q-5">
+            <p>SignSafe adds 1-3 seconds before the wallet popup opens. This is the time it takes to run the RPC simulation and get the AI analysis back.</p>
+            <p>This delay is intentional. The entire point is to pause before you sign. If a 2-second pause is too slow for your use case, you can disable SignSafe for specific sites from the extension popup.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-6" id="faq-q-6">
+            <span>Does it work with all Solana wallets?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-6" role="region" aria-labelledby="faq-q-6">
+            <p>SignSafe works with wallets that inject a <span class="faq-code">window.solana</span> provider - including Phantom, Backpack, Solflare, and most browser-based Solana wallets.</p>
+            <p>It does not currently work with hardware wallets used standalone, wallet-connect style mobile signers, or wallets that use non-standard injection interfaces.</p>
+            <div class="faq-callout warn">Only one wallet extension can hold the primary <span class="faq-code">window.solana</span> slot at a time. If multiple wallet extensions are installed, only the active one is wrapped.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-7" id="faq-q-7">
+            <span>How accurate is the AI analysis? Can it be wrong?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-7" role="region" aria-labelledby="faq-q-7">
+            <p>The simulation result from Solana's RPC is ground truth - it cannot be wrong about what the transaction will do. The AI's job is to translate that into plain English and assign a risk level, and that translation can occasionally be over- or under-cautious.</p>
+            <p>The most common false positive: a legitimate new protocol gets flagged as Review because its program was deployed recently. The most common false negative: a sophisticated drainer that mimics a legitimate transaction structure.</p>
+            <p>SignSafe is a second opinion, not a guarantee. The final decision is always yours. If something feels wrong even after a green verdict, trust that feeling.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-8" id="faq-q-8">
+            <span>What happens after I block a transaction?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-8" role="region" aria-labelledby="faq-q-8">
+            <p>When you click Block, SignSafe throws an error to the dApp - the same error pattern as dismissing a wallet popup. The dApp sees a rejection and the transaction is never broadcast.</p>
+            <p>SignSafe shows you a breakdown of exactly which instruction triggered the flag, so you can understand what you just avoided. You can optionally submit the malicious site or program address to our community blocklist so other users are protected within the next sync cycle.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-category">
+      <div class="faq-category-head">
+        <span class="faq-category-dot" style="background:var(--green);"></span>
+        <span class="faq-category-title">Compared to alternatives</span>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-9" id="faq-q-9">
+            <span>Phantom already has built-in transaction warnings. Why do I need this?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-9" role="region" aria-labelledby="faq-q-9">
+            <p>Phantom's warnings (powered by Blowfish) are good - and we think you should keep them on. SignSafe is a complementary layer, not a replacement. The key difference: Phantom's warnings appear inside the wallet popup, after the transaction has already reached it. SignSafe intercepts before the popup opens.</p>
+            <p>More practically: Phantom's integration only covers Phantom. SignSafe wraps any wallet that uses <span class="faq-code">window.solana</span>, including wallets that have no built-in security analysis. Backpack, Solflare, and smaller wallets get the same protection.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-10" id="faq-q-10">
+            <span>Is this the same as Blowfish or other transaction scanners?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-10" role="region" aria-labelledby="faq-q-10">
+            <p>Blowfish is an API-based service that wallet providers integrate on their backend. It uses a database of known threats and rule-based heuristics. It is excellent but requires the wallet to have integrated it.</p>
+            <p>SignSafe uses live on-chain simulation via Solana's public RPC - there is no proprietary database, no subscription, and no wallet integration required. The simulation tells you exactly what will happen, not just whether it matches a known pattern. A brand-new drainer that Blowfish has not seen yet can still be caught by SignSafe if the simulation shows tokens draining.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-11" id="faq-q-11">
+            <span>Is SignSafe free? What is the business model?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-11" role="region" aria-labelledby="faq-q-11">
+            <p>Free for personal use, always. The extension costs nothing and has no usage limits.</p>
+            <p>The API costs (Solana RPC + Claude AI) are negligible per transaction - under $0.01 per analysis at current pricing. For the current beta, these are covered by the team.</p>
+            <p>The long-term model is a developer API and SDK for dApps and wallet providers that want to embed SignSafe analysis natively, while the personal extension stays free.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-category">
+      <div class="faq-category-head">
+        <span class="faq-category-dot" style="background:var(--muted);"></span>
+        <span class="faq-category-title">Edge cases</span>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-12" id="faq-q-12">
+            <span>What if SignSafe itself gets compromised or has a malicious update?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-12" role="region" aria-labelledby="faq-q-12">
+            <p>This is the right question to ask of any security tool. The Chrome Web Store enforces code review on updates, but that is not a complete guarantee.</p>
+            <p>Two protections: first, SignSafe is open source so any version can be diffed against the previous one on GitHub. Community review of updates is encouraged. Second, the extension permissions are intentionally minimal, so even a compromised version cannot access your keys or browsing history.</p>
+            <div class="faq-callout good">If you want to be certain: pin the extension version in Chrome and only update after the community has reviewed the new commit.</div>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-13" id="faq-q-13">
+            <span>Does it work on mobile?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-13" role="region" aria-labelledby="faq-q-13">
+            <p>Not currently. SignSafe is a desktop Chrome extension and cannot hook into mobile wallet in-app browser architectures yet.</p>
+            <p>If you primarily use Solana on mobile, the best current option is to use Phantom's built-in transaction screening and treat any transaction link from a DM, tweet, or Discord message with high suspicion before approving.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false" aria-controls="faq-a-14" id="faq-q-14">
+            <span>What if the Solana RPC is down or unreachable?</span>
+            <svg class="faq-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6l5 5 5-5"/></svg>
+          </button>
+          <div class="faq-answer" id="faq-a-14" role="region" aria-labelledby="faq-q-14">
+            <p>If RPC simulation fails for any reason - network error, timeout, expired blockhash - SignSafe defaults to a Review verdict with a clear notice that analysis was incomplete. It does not silently pass the transaction through as Safe.</p>
+            <p>You always retain the choice to proceed or block. A failed simulation means less information, not a green light.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -361,6 +581,24 @@ betaForm.addEventListener('submit',async(event)=>{
     betaStatus.textContent='Could not submit. Please try again in a moment.';
     betaStatus.className='beta-status error';
   }
+});
+
+document.querySelectorAll('.faq-question').forEach((button)=>{
+  button.addEventListener('click',()=>{
+    const item=button.closest('.faq-item');
+    const isOpen=item.classList.contains('open');
+
+    document.querySelectorAll('.faq-item.open').forEach((openItem)=>{
+      openItem.classList.remove('open');
+      const openButton=openItem.querySelector('.faq-question');
+      if(openButton) openButton.setAttribute('aria-expanded','false');
+    });
+
+    if(!isOpen){
+      item.classList.add('open');
+      button.setAttribute('aria-expanded','true');
+    }
+  });
 });
 </script>
 </body>
