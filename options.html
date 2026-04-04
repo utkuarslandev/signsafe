@@ -6,60 +6,32 @@
     <title>SignSafe Setup</title>
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
     <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared/theme.css" />
     <style>
-      :root {
-        color-scheme: dark;
-        --ink:         #dde4f0;
-        --ink-muted:   #5e7294;
-        --ink-dim:     #38506b;
-        --line:        rgba(255,255,255,0.06);
-        --border:      rgba(255,255,255,0.09);
-        --bg-page:     #060a14;
-        --bg-panel:    #0b1120;
-        --bg-card:     rgba(255,255,255,0.04);
-        --bg-input:    rgba(255,255,255,0.05);
-
-        --safe-color:  #22c97b;
-        --safe-bg:     rgba(34,201,123,0.10);
-        --safe-border: rgba(34,201,123,0.22);
-
-        --review-color:  #f0a429;
-        --review-bg:     rgba(240,164,41,0.10);
-        --review-border: rgba(240,164,41,0.24);
-
-        --danger-color:  #f04a4a;
-        --danger-bg:     rgba(240,74,74,0.10);
-        --danger-border: rgba(240,74,74,0.26);
-
-        --accent:        #4d8fff;
-        --accent-bg:     rgba(77,143,255,0.10);
-        --accent-border: rgba(77,143,255,0.24);
-      }
-
       * { box-sizing: border-box; }
 
       body {
         margin: 0;
         padding: 40px 24px;
         background:
-          radial-gradient(ellipse 60% 40% at 70% 10%, rgba(77,143,255,0.06), transparent),
-          radial-gradient(ellipse 40% 30% at 20% 85%, rgba(120,80,255,0.04), transparent),
-          #060a14;
+          radial-gradient(ellipse 60% 40% at 70% 10%, rgba(239,58,58,0.05), transparent),
+          var(--bg);
         min-height: 100vh;
-        color: var(--ink);
-        font-family: "Inter", "Segoe UI", sans-serif;
+        color: var(--text);
+        font-family: "Geist", "Inter", sans-serif;
+        font-size: 15px;
       }
 
       main {
         max-width: 440px;
         margin: 0 auto;
         padding: 28px 28px 24px;
-        border-radius: 18px;
-        background: var(--bg-panel);
-        box-shadow: 0 32px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06);
+        border-radius: 16px;
+        background: var(--surface);
+        box-shadow: 0 32px 100px rgba(0,0,0,0.55), 0 0 0 1px var(--border);
         border: 1px solid var(--border);
       }
 
@@ -67,86 +39,52 @@
       .wordmark {
         display: inline-flex;
         align-items: center;
-        gap: 9px;
+        gap: 10px;
         margin-bottom: 24px;
+        text-decoration: none;
       }
 
-      .wordmark-shield {
-        width: 30px;
-        height: 30px;
-        background: linear-gradient(140deg, #3a7aff, #1a4ec8);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 3px 12px rgba(58,122,255,0.35);
-        flex-shrink: 0;
+      .wordmark img {
+        width: 28px;
+        height: 28px;
+        display: block;
+        border-radius: 6px;
       }
 
-      .wordmark-shield img { width: 15px; height: 15px; display: block; }
-      .wordmark-text { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
-
-      /* ── Progress dots ── */
-      .step-dots {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        margin-bottom: 20px;
+      .wordmark-text {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: -0.02em;
       }
-
-      .step-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.10);
-        transition: background 240ms ease, width 240ms ease;
-      }
-
-      .step-dot.active { background: var(--accent); width: 18px; }
-      .step-dot.done   { background: var(--safe-color); }
 
       /* ── Headings ── */
       h1 {
         margin: 0 0 4px;
         font-size: 20px;
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: -0.025em;
-        color: var(--ink);
+        color: var(--text);
       }
 
       .subtitle {
-        margin: 0 0 20px;
-        color: var(--ink-muted);
+        margin: 0 0 22px;
+        color: var(--muted);
         font-size: 13px;
         line-height: 1.6;
       }
-
-      /* ── Warning box ── */
-      .warning-box {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 11px 13px;
-        margin-bottom: 20px;
-        background: var(--review-bg);
-        color: var(--review-color);
-        border-radius: 10px;
-        font-size: 12px;
-        line-height: 1.6;
-        border: 1px solid var(--review-border);
-      }
-
-      .warning-box svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
-      .warning-box a { color: var(--review-color); font-weight: 700; }
 
       /* ── Label ── */
       label {
         display: block;
         margin-bottom: 6px;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--ink-muted);
-        letter-spacing: 0.04em;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--muted);
       }
 
       /* ── Input row ── */
@@ -158,29 +96,27 @@
       #api-key {
         width: 100%;
         padding: 12px 46px 12px 13px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-2);
         border-radius: 10px;
-        font: inherit;
+        font-family: "JetBrains Mono", "Fira Code", monospace;
         font-size: 13px;
-        color: var(--ink);
-        background: var(--bg-input);
-        transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+        color: var(--text);
+        background: var(--surface-2);
+        transition: border-color 140ms ease, box-shadow 140ms ease;
         outline: none;
-        font-family: "SF Mono", "Fira Code", monospace;
       }
 
       #api-key:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-bg);
-        background: rgba(255,255,255,0.07);
+        border-color: var(--border-2);
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
       }
 
       #api-key.invalid {
-        border-color: var(--danger-color);
-        box-shadow: 0 0 0 3px var(--danger-bg);
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px var(--red-dim);
       }
 
-      #api-key::placeholder { color: var(--ink-dim); }
+      #api-key::placeholder { color: var(--muted-2); }
 
       #toggle-key {
         position: absolute;
@@ -195,21 +131,22 @@
         border: none;
         background: transparent;
         cursor: pointer;
-        color: var(--ink-muted);
+        color: var(--muted);
         border-radius: 7px;
         padding: 0;
         transition: color 120ms ease, background 120ms ease;
       }
 
-      #toggle-key:hover { color: var(--ink); background: rgba(255,255,255,0.07); }
+      #toggle-key:hover { color: var(--text); background: rgba(255,255,255,0.05); }
       #toggle-key svg { width: 16px; height: 16px; }
 
       /* ── Key hint ── */
       #key-hint {
         min-height: 17px;
         margin-bottom: 14px;
+        font-family: "JetBrains Mono", monospace;
         font-size: 11px;
-        color: var(--danger-color);
+        color: var(--red);
         padding-left: 2px;
       }
 
@@ -228,19 +165,18 @@
         gap: 7px;
         min-height: 42px;
         padding: 0 20px;
-        border: 1px solid rgba(58,122,255,0.3);
+        border: none;
         border-radius: 10px;
-        background: linear-gradient(140deg, #3a7aff, #1a4ec8);
-        color: white;
-        font: inherit;
-        font-size: 13px;
-        font-weight: 700;
+        background: var(--red);
+        color: #fff;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        font-weight: 600;
         cursor: pointer;
-        box-shadow: 0 3px 14px rgba(58,122,255,0.30);
-        transition: box-shadow 140ms ease, transform 100ms ease, opacity 100ms ease;
+        transition: background 140ms ease, transform 100ms ease;
       }
 
-      #save:hover { box-shadow: 0 6px 22px rgba(58,122,255,0.45); transform: translateY(-1px); }
+      #save:hover { background: #ff4545; transform: translateY(-1px); }
       #save:active { transform: translateY(0); opacity: 0.88; }
 
       /* ── Test button ── */
@@ -250,21 +186,21 @@
         gap: 6px;
         min-height: 42px;
         padding: 0 16px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-2);
         border-radius: 10px;
-        background: var(--bg-card);
-        color: var(--ink-muted);
-        font: inherit;
-        font-size: 13px;
+        background: transparent;
+        color: var(--muted);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
         font-weight: 600;
         cursor: pointer;
         transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
       }
 
       #test-connection:hover {
-        border-color: var(--accent-border);
-        color: var(--accent);
-        background: var(--accent-bg);
+        border-color: var(--muted-2);
+        color: var(--text);
+        background: rgba(255,255,255,0.04);
       }
 
       #test-connection:disabled { opacity: 0.4; cursor: default; }
@@ -277,15 +213,16 @@
         margin-top: 12px;
         padding: 10px 13px;
         border-radius: 9px;
+        font-family: "JetBrains Mono", monospace;
         font-size: 12px;
         font-weight: 600;
         animation: fadeIn 180ms ease;
         border: 1px solid transparent;
       }
 
-      #status.success { display: flex; background: var(--safe-bg);   color: var(--safe-color);   border-color: var(--safe-border); }
-      #status.error   { display: flex; background: var(--danger-bg); color: var(--danger-color); border-color: var(--danger-border); }
-      #status.testing { display: flex; background: var(--accent-bg); color: var(--accent);       border-color: var(--accent-border); }
+      #status.success { display: flex; background: var(--green-dim);  color: var(--green);  border-color: var(--green-border); }
+      #status.error   { display: flex; background: var(--red-dim);    color: var(--red);    border-color: var(--red-border); }
+      #status.testing { display: flex; background: var(--surface-2);  color: var(--muted);  border-color: var(--border); }
       #status svg { width: 14px; height: 14px; flex-shrink: 0; }
 
       @keyframes fadeIn {
@@ -293,22 +230,50 @@
         to   { opacity: 1; transform: translateY(0); }
       }
 
+      /* ── Info note ── */
+      .info-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 12px;
+        margin-top: 16px;
+        background: var(--surface-2);
+        color: var(--muted);
+        border-radius: 9px;
+        font-size: 12px;
+        line-height: 1.6;
+        border: 1px solid var(--border);
+      }
+
+      .info-note svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; }
+      .info-note a { color: var(--muted); font-weight: 600; }
+      .info-note a:hover { color: var(--text); }
+
       /* ── Divider ── */
       hr {
         margin: 22px 0;
         border: none;
-        border-top: 1px solid var(--line);
+        border-top: 1px solid var(--border);
       }
 
       /* ── Next steps ── */
-      .next-steps {
+      .next-steps-wrapper {
         display: none;
         flex-direction: column;
-        gap: 8px;
-        margin-top: 18px;
+        gap: 10px;
+        margin-top: 20px;
       }
 
-      .next-steps.visible { display: flex; }
+      .next-steps-wrapper.visible { display: flex; }
+
+      .next-steps-eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--muted-2);
+      }
 
       .next-step {
         display: flex;
@@ -317,18 +282,18 @@
         padding: 12px 14px;
         border-radius: 10px;
         border: 1px solid var(--border);
-        background: var(--bg-card);
+        background: var(--surface-2);
         text-decoration: none;
-        color: var(--ink);
+        color: var(--text);
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 500;
         cursor: pointer;
         transition: border-color 140ms ease, background 140ms ease, transform 100ms ease;
       }
 
       .next-step:hover {
-        border-color: var(--accent-border);
-        background: var(--accent-bg);
+        border-color: var(--border-2);
+        background: var(--border);
         transform: translateY(-1px);
       }
 
@@ -340,50 +305,36 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        background: var(--accent-bg);
-        color: var(--accent);
-        border: 1px solid var(--accent-border);
       }
 
+      .next-step-icon.red   { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red-border); }
+      .next-step-icon.green { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
       .next-step-icon svg { width: 15px; height: 15px; }
 
       .next-step-body { flex: 1; }
-      .next-step-title { font-size: 13px; font-weight: 700; color: var(--ink); }
-      .next-step-desc  { font-size: 11px; font-weight: 400; color: var(--ink-muted); margin-top: 1px; }
-      .next-step-arrow { color: var(--ink-dim); font-size: 15px; }
+      .next-step-title { font-size: 13px; font-weight: 600; color: var(--text); }
+      .next-step-desc  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+      .next-step-arrow { color: var(--muted-2); font-size: 14px; }
 
       /* ── Page footer ── */
-      .page-footer { font-size: 11px; color: var(--ink-dim); }
+      .page-footer {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--muted-2);
+      }
 
-      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      :focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
     </style>
   </head>
   <body>
     <main>
       <div class="wordmark">
-        <div class="wordmark-shield">
-          <img src="icons/icon.svg" alt="" aria-hidden="true" />
-        </div>
+        <img src="icons/icon.svg" alt="" aria-hidden="true" />
         <span class="wordmark-text">SignSafe</span>
-      </div>
-
-      <div class="step-dots" id="step-dots">
-        <div class="step-dot active" id="dot-1"></div>
-        <div class="step-dot" id="dot-2"></div>
-        <div class="step-dot" id="dot-3"></div>
       </div>
 
       <h1>Connect your OpenAI key</h1>
       <p class="subtitle">SignSafe needs this to analyze transactions. One-time setup — your key stays in your browser.</p>
-
-      <div class="warning-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-        <span>Use a project-scoped key with a spend limit. The key never leaves your browser except to call OpenAI. <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Get a key →</a></span>
-      </div>
 
       <label for="api-key">OpenAI API key</label>
       <div class="input-row">
@@ -404,9 +355,17 @@
 
       <div id="status" role="status" aria-live="polite"></div>
 
-      <div class="next-steps" id="next-steps">
+      <div class="info-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>Use a project-scoped key with a spend limit. Your key never leaves your browser except to call OpenAI. <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Get a key →</a></span>
+      </div>
+
+      <div class="next-steps-wrapper" id="next-steps">
+        <div class="next-steps-eyebrow">Next steps</div>
         <a class="next-step" id="open-demo" href="#" target="_blank" rel="noopener noreferrer">
-          <div class="next-step-icon">
+          <div class="next-step-icon red">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="5 3 19 12 5 21 5 3"/>
             </svg>
@@ -418,7 +377,7 @@
           <span class="next-step-arrow">→</span>
         </a>
         <div class="next-step" id="reload-ext" role="button" tabindex="0">
-          <div class="next-step-icon" style="background: var(--safe-bg); color: var(--safe-color); border-color: var(--safe-border);">
+          <div class="next-step-icon green">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="23 4 23 10 17 10"/>
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>

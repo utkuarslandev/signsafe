@@ -38,16 +38,13 @@
       <div class="type-tag">${typeTag}</div>
       <h2>${fixture.name}</h2>
       <p>${fixture.description}</p>
-      <button type="button">
+      <div class="card-trigger" aria-hidden="true">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/></svg>
         Preview overlay
-      </button>
+      </div>
     `;
 
-    card.querySelector("button").addEventListener("click", (e) => {
-      e.stopPropagation();
-      previewFixture(fixture);
-    });
+    card.addEventListener("click", () => previewFixture(fixture));
     grid.appendChild(card);
     cardEls.set(fixture.id, card);
   }

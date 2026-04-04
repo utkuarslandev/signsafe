@@ -46,6 +46,65 @@ const analysisService = SHARED.createBackgroundAnalysisService({
   debugLog
 });
 
+const RISK_COLORS = {
+  safe:    "#22c55e",
+  review:  "#f59e0b",
+  danger:  "#ef3a3a",
+  default: "#5a5a6e"
+};
+
+function drawShieldIcon(size, color) {
+  const canvas = new OffscreenCanvas(size, size);
+  const ctx = canvas.getContext("2d");
+  const s = size / 128;
+
+  // Shield path scaled from 128×128 viewBox
+  const shield = new Path2D();
+  shield.moveTo(64 * s, 20 * s);
+  shield.lineTo(96 * s, 33 * s);
+  shield.lineTo(96 * s, 62 * s);
+  shield.bezierCurveTo(96 * s, 80 * s, 80 * s, 93 * s, 64 * s, 100 * s);
+  shield.bezierCurveTo(48 * s, 93 * s, 32 * s, 80 * s, 32 * s, 62 * s);
+  shield.lineTo(32 * s, 33 * s);
+  shield.closePath();
+
+  ctx.fillStyle = color + "30";
+  ctx.fill(shield);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1.5, 2 * s);
+  ctx.lineJoin = "round";
+  ctx.stroke(shield);
+
+  // Brand dot at shield top
+  ctx.beginPath();
+  ctx.arc(64 * s, 20 * s, 3 * s, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  return ctx.getImageData(0, 0, size, size);
+}
+
+function setTabIcon(tabId, risk) {
+  const color = RISK_COLORS[risk] || RISK_COLORS.default;
+  try {
+    chrome.action.setIcon({
+      tabId,
+      imageData: {
+        16: drawShieldIcon(16, color),
+        32: drawShieldIcon(32, color)
+      }
+    });
+  } catch (_) {
+    // OffscreenCanvas unavailable — silently skip
+  }
+}
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === "loading") {
+    setTabIcon(tabId, "default");
+  }
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message !== "object") {
     return false;
@@ -58,13 +117,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === (RUNTIME_MESSAGE_TYPES.ANALYZE_TX || "ANALYZE_TX")) {
+    const tabId = sender?.tab?.id ?? null;
     debugLog("received ANALYZE_TX", message.method, sender?.url || "");
     analysisService
       .analyzeTransaction(message.tx, {
         method: message.method || "signTransaction",
         sourceUrl: message.sourceUrl || sender?.url || ""
       })
-      .then(sendResponse);
+      .then(verdict => {
+        if (tabId != null) setTabIcon(tabId, verdict.risk);
+        sendResponse(verdict);
+      });
     return true;
   }
 

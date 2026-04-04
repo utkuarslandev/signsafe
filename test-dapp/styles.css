@@ -1,17 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-:root {
-  color-scheme: light;
-  --bg-top: #e9f0ff;
-  --bg-bottom: #f5f7fb;
-  --ink: #10223d;
-  --muted: #5f7087;
-  --line: rgba(16, 34, 61, 0.1);
-  --panel: rgba(255, 255, 255, 0.92);
-  --accent: #1f5eff;
-  --accent-dark: #143da7;
-  --ghost: rgba(16, 34, 61, 0.04);
-}
+/* Fonts loaded via <link> tags in index.html */
 
 * {
   box-sizing: border-box;
@@ -21,18 +8,18 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  font-family: "Inter", "Segoe UI", sans-serif;
-  color: var(--ink);
-  background:
-    radial-gradient(circle at top right, rgba(31, 94, 255, 0.14), transparent 24%),
-    radial-gradient(circle at left bottom, rgba(38, 184, 142, 0.12), transparent 22%),
-    linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+  font-family: "Geist", "Inter", "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
 }
 
 code {
   padding: 0.1rem 0.35rem;
-  border-radius: 0.45rem;
-  background: rgba(16, 34, 61, 0.06);
+  border-radius: 5px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.875em;
+  background: var(--surface-2);
+  color: var(--muted);
 }
 
 .shell {
@@ -50,10 +37,11 @@ code {
   align-items: center;
   gap: 8px;
   margin: 0 0 12px;
-  color: var(--accent-dark);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  color: var(--red);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
@@ -75,26 +63,28 @@ code {
 
 h1 {
   margin: 0 0 10px;
-  font-size: clamp(32px, 4vw, 54px);
-  line-height: 0.98;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text);
 }
 
 .intro {
   max-width: 760px;
   margin: 0;
   color: var(--muted);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.65;
 }
 
 .panel {
   margin-top: 18px;
   padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 24px;
-  background: var(--panel);
-  box-shadow: 0 18px 40px rgba(16, 34, 61, 0.08);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
 .meta-grid {
@@ -106,17 +96,20 @@ h1 {
 .label {
   margin-bottom: 6px;
   color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .value {
   min-height: 24px;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
+  color: var(--text);
   word-break: break-word;
+  font-family: "JetBrains Mono", monospace;
 }
 
 .button-grid {
@@ -127,21 +120,26 @@ h1 {
 }
 
 button {
-  min-height: 50px;
+  min-height: 46px;
   padding: 0 16px;
   border: none;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #2b6fff, #1a50d4);
-  color: white;
+  border-radius: 10px;
+  background: var(--red);
+  color: #fff;
+  font-family: "JetBrains Mono", monospace;
   font: inherit;
-  font-weight: 700;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition:
     transform 120ms ease,
-    opacity 120ms ease;
+    opacity 120ms ease,
+    background 120ms ease;
 }
 
 button:hover {
+  background: #ff4545;
   transform: translateY(-1px);
 }
 
@@ -152,24 +150,32 @@ button:disabled {
 }
 
 .ghost {
-  min-height: 38px;
+  min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--ghost);
-  color: var(--ink);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.ghost:hover {
+  background: var(--border);
+  border-color: var(--border-2);
+  color: var(--text);
+  transform: none;
 }
 
 .notes {
   margin-top: 22px;
   color: var(--muted);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 .notes p {
   margin: 0 0 8px;
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .notes ul {
@@ -186,7 +192,10 @@ button:disabled {
 
 .log-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .log-output {
@@ -194,12 +203,13 @@ button:disabled {
   margin: 16px 0 0;
   padding: 18px;
   overflow: auto;
-  border-radius: 18px;
-  background: #0f1b2e;
-  color: #d5e7ff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
-  line-height: 1.55;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.6;
   white-space: pre-wrap;
 }
 
@@ -211,6 +221,6 @@ button:disabled {
 
   .panel {
     padding: 18px;
-    border-radius: 20px;
+    border-radius: 14px;
   }
 }

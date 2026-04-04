@@ -50,3 +50,11 @@ Then open `http://127.0.0.1:8788` and use the core buttons in order:
 The page also includes `Batch Sign All` and `Multi-Instruction Send` to exercise `signAllTransactions` and a multi-instruction transaction shape.
 
 This page uses a 1-lamport self-transfer on devnet and is meant to trigger SignSafe on a controlled localhost origin instead of relying on third-party dApps.
+
+## Licensing
+
+This project is source-available under `BSL 1.1` with an Additional Use Grant.
+
+- Main license: `LICENSE`
+- Commercial terms: `COMMERCIAL_LICENSE.md`
+- FAQ: `LICENSING_FAQ.md`

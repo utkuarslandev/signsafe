@@ -6,8 +6,6 @@ const saveButton = document.getElementById("save");
 const testButton = document.getElementById("test-connection");
 const keyHint = document.getElementById("key-hint");
 const nextSteps = document.getElementById("next-steps");
-const dot1 = document.getElementById("dot-1");
-const dot2 = document.getElementById("dot-2");
 const reloadExtBtn = document.getElementById("reload-ext");
 
 const STORAGE_KEYS = globalThis.SIGNSAFE_SHARED?.constants?.STORAGE_KEYS || {};
@@ -44,7 +42,7 @@ async function restore() {
   const key = stored?.[API_KEY_STORAGE_KEY] || "";
   apiKeyInput.value = key;
   if (key) {
-    advanceToStep2();
+    nextSteps.classList.add("visible");
   }
 }
 
@@ -54,10 +52,10 @@ async function save() {
   await chrome.storage.local.set({ [API_KEY_STORAGE_KEY]: key });
   if (key) {
     showStatus("success", "Key saved. Live analysis is ready.");
-    advanceToStep2();
+    nextSteps.classList.add("visible");
   } else {
     showStatus("error", "Key cleared. Analysis will be unavailable.");
-    resetToStep1();
+    nextSteps.classList.remove("visible");
   }
 }
 
@@ -78,7 +76,7 @@ async function testConnection() {
 
     if (res.ok) {
       showStatus("success", "✓ Key accepted by OpenAI.");
-      advanceToStep2();
+      nextSteps.classList.add("visible");
     } else if (res.status === 401) {
       showStatus("error", "✗ OpenAI rejected this key (401 Unauthorized).");
     } else {
@@ -123,16 +121,4 @@ function showStatus(type, message) {
   };
   statusEl.innerHTML = `${icons[type] || icons.error}<span>${message}</span>`;
   statusEl.className = type;
-}
-
-function advanceToStep2() {
-  dot1.className = "step-dot done";
-  dot2.className = "step-dot active";
-  nextSteps.classList.add("visible");
-}
-
-function resetToStep1() {
-  dot1.className = "step-dot active";
-  dot2.className = "step-dot";
-  nextSteps.classList.remove("visible");
 }
