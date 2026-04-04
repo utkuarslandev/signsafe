@@ -35,7 +35,7 @@ For message signatures (`signMessage`), no on-chain simulation is possible, so S
 
 ## Local Test DApp
 
-If you are using the multi-repo workspace (`SignSafe-Meta`), the local harness lives in the meta repo at `demo/` (not inside the extension repository).
+If you are using the multi-repo workspace (`SignSafe-Meta`), the local harness is the `demo` submodule at `demo/` in the meta workspace (repository: `SignSafeHQ/SignSafe-Demo`), not inside the extension repository.
 Serve it from the meta root:
 
 ```bash
