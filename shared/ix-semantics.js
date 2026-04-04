@@ -12,6 +12,8 @@
   const MEMO_PROGRAM = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
 
   const U64_MAX_BIG = 18446744073709551615n;
+  /** Approvals at or above this (base units) are treated like unlimited-delegate phishing (includes u64::MAX). */
+  const LARGE_APPROVE_AMOUNT_THRESHOLD = 1_000_000_000_000n; // 10^12
 
   function readU32LE(data, offset) {
     const view = new DataView(data.buffer, data.byteOffset + offset, 4);
@@ -23,6 +25,49 @@
     const lo = view.getUint32(0, true);
     const hi = view.getUint32(4, true);
     return (BigInt(hi) << 32n) | BigInt(lo);
+  }
+
+  /**
+   * SPL SetAuthority: [u8 tag=6][u8 authorityType][COption<Pubkey> newAuthority]
+   * COption: 0 = None (revoke), 1 = Some + 32-byte pubkey (total 35 bytes after tag+type).
+   */
+  function decodeSetAuthoritySemantics(data) {
+    const authorityType = data.length >= 2 ? data[1] : 0;
+    if (data.length < 3) {
+      return {
+        family: "spl_token",
+        type: "SET_AUTHORITY",
+        authorityType,
+        newAuthoritySet: false,
+        newAuthorityRevoked: false
+      };
+    }
+    const opt = data[2];
+    if (opt === 0) {
+      return {
+        family: "spl_token",
+        type: "SET_AUTHORITY",
+        authorityType,
+        newAuthoritySet: false,
+        newAuthorityRevoked: true
+      };
+    }
+    if (opt === 1 && data.length >= 35) {
+      return {
+        family: "spl_token",
+        type: "SET_AUTHORITY",
+        authorityType,
+        newAuthoritySet: true,
+        newAuthorityRevoked: false
+      };
+    }
+    return {
+      family: "spl_token",
+      type: "SET_AUTHORITY",
+      authorityType,
+      newAuthoritySet: false,
+      newAuthorityUnclear: true
+    };
   }
 
   function decodeSystemInstruction(data) {
@@ -61,7 +106,8 @@
     }
     const u64At1 = data.length >= 9 ? readU64LE(data, 1) : 0n;
     const amountNum = Number(u64At1);
-    const isUnlimited = u64At1 === U64_MAX_BIG;
+    const isUnlimited =
+      u64At1 === U64_MAX_BIG || u64At1 >= LARGE_APPROVE_AMOUNT_THRESHOLD;
 
     if (tag === 0) return { family: "spl_token", type: "INITIALIZE_MINT" };
     if (tag === 1) return { family: "spl_token", type: "INITIALIZE_ACCOUNT" };
@@ -71,7 +117,9 @@
       return { family: "spl_token", type: "APPROVE", amount: amountNum, isUnlimited };
     }
     if (tag === 5) return { family: "spl_token", type: "REVOKE" };
-    if (tag === 6) return { family: "spl_token", type: "SET_AUTHORITY" };
+    if (tag === 6) {
+      return decodeSetAuthoritySemantics(data);
+    }
     if (tag === 7) return { family: "spl_token", type: "MINT_TO", amount: amountNum };
     if (tag === 8) return { family: "spl_token", type: "BURN", amount: amountNum };
     if (tag === 9) return { family: "spl_token", type: "CLOSE_ACCOUNT" };
@@ -83,7 +131,7 @@
     }
     if (tag === 13) {
       const amt = data.length >= 10 ? readU64LE(data, 1) : 0n;
-      const unlim = amt === U64_MAX_BIG;
+      const unlim = amt === U64_MAX_BIG || amt >= LARGE_APPROVE_AMOUNT_THRESHOLD;
       return { family: "spl_token", type: "APPROVE_CHECKED", amount: Number(amt), isUnlimited: unlim };
     }
     if (tag === 14) return { family: "spl_token", type: "MINT_TO_CHECKED", amount: amountNum };

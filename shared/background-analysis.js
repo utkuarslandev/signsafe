@@ -237,22 +237,20 @@
       if (shadow?.ok && Array.isArray(shadow.semantics)) {
         const semTypes = shadow.semantics.map((s) => s.semantic?.type).filter(Boolean);
 
-        // Pure SOL drain: all instructions are TRANSFER, SOL leaves, no token received
-        const allTransfers =
-          shadow.semantics.length > 0 &&
-          shadow.semantics.every((s) => s.semantic?.type === "TRANSFER");
-        if (allTransfers && facts.totalSolOut > 0.001 && facts.totalTokenIn === 0) {
+        // SOL drain: SOL leaves with no token received. Fires regardless of other instructions (memo decoys, etc.).
+        const hasSolTransfer = semTypes.includes("TRANSFER");
+        if (hasSolTransfer && facts.totalSolOut > 0.001 && facts.totalTokenIn === 0) {
           risk = maxRisk(risk, "danger");
           addReason(reasonCodes, riskReasons, "sol_drain",
             "SOL is transferred out of your wallet with no asset received in return.");
         }
 
-        // Hidden injection: memo decoy bundled with a SOL transfer
+        // Hidden injection: memo decoy bundled with a SOL transfer (more specific label when memo is present)
         const hasMemo = shadow.semantics.some((s) => s.semantic?.family === "memo");
         if (hasMemo && semTypes.includes("TRANSFER")) {
           risk = maxRisk(risk, "danger");
           addReason(reasonCodes, riskReasons, "hidden_instruction",
-            "A SOL transfer is bundled with a memo — the memo makes the transaction appear as a swap while hiding the fund movement.");
+            "A SOL transfer is bundled with a memo — making the transaction appear as a swap while hiding the fund movement.");
         }
 
         // Account ownership reassignment
@@ -288,11 +286,14 @@
             "Transaction grants unlimited token spending rights to a third party.");
         }
 
-        // Mint or account authority transfer
-        if (semTypes.includes("SET_AUTHORITY")) {
+        // Mint or account authority transfer to a new pubkey (revoking authority is not flagged)
+        const hasSetAuthorityToNew = shadow.semantics.some(
+          (s) => s.semantic?.type === "SET_AUTHORITY" && s.semantic?.newAuthoritySet === true
+        );
+        if (hasSetAuthorityToNew) {
           risk = maxRisk(risk, "danger");
           addReason(reasonCodes, riskReasons, "authority_transfer",
-            "Transaction changes mint or token account authority.");
+            "Transaction assigns mint or token account authority to another address.");
         }
 
         // Token-2022 PermanentDelegate extension
@@ -315,14 +316,28 @@
             "Transaction uses a Token-2022 instruction that may enable hidden token controls.");
         }
 
-        // STMT-style multi-asset: several SPL transfers + SOL movement + net token inflow (simulation aggregates all accounts)
+        // STMT-style multi-asset drain: multiple SPL transfers + SOL out + both token in and out (narrows vs simple swaps)
         const transferCheckedCount = shadow.semantics.filter(
           (s) => s.semantic?.type === "TRANSFER_CHECKED"
         ).length;
-        if (transferCheckedCount >= 2 && facts.totalSolOut > 0 && facts.totalTokenIn > 0) {
+        if (
+          transferCheckedCount >= 2 &&
+          facts.totalSolOut > 0 &&
+          facts.totalTokenIn > 0 &&
+          facts.totalTokenOut > 0
+        ) {
           risk = maxRisk(risk, "danger");
           addReason(reasonCodes, riskReasons, "multi_asset_spl_bundle",
-            "Multiple SPL transfers and SOL movement in one transaction — verify every recipient.");
+            "Multiple SPL transfers with SOL and token movement in several directions — verify every recipient.");
+        }
+
+        // Mint-and-drain: fresh tokens minted and immediately transferred within the same transaction.
+        // No legitimate swap protocol mints assets and drains them atomically in a single user tx.
+        const hasMintToChecked = semTypes.includes("MINT_TO_CHECKED");
+        if (hasMintToChecked && transferCheckedCount >= 1 && facts.totalSolOut > 0) {
+          risk = maxRisk(risk, "danger");
+          addReason(reasonCodes, riskReasons, "mint_and_drain_bundle",
+            "Transaction mints tokens and immediately transfers them alongside SOL movement — a multi-asset drain pattern.");
         }
       }
 

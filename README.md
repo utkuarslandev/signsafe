@@ -35,11 +35,11 @@ For message signatures (`signMessage`), no on-chain simulation is possible, so S
 
 ## Local Test DApp
 
-If you are using the multi-repo workspace (`SignSafe-Meta`), the local harness lives at `demo/test-dapp`.
+If you are using the multi-repo workspace (`SignSafe-Meta`), the local harness lives in the meta repo at `demo/` (not inside the extension repository).
 Serve it from the meta root:
 
 ```bash
-python3 -m http.server 8788 --directory demo/test-dapp
+python3 -m http.server 8788 --directory demo
 ```
 
 Then open `http://127.0.0.1:8788`, connect a devnet wallet, and run the scenario cards (SOL drain, hidden injection, STMT-lite, and others). Sign-only is the default; optional broadcast submits real transactions to devnet after confirmation.
