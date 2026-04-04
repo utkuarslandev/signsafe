@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SignSafe Options</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px;
+        background: #f4f7fb;
+        color: #132033;
+      }
+
+      main {
+        max-width: 640px;
+        padding: 28px;
+        border-radius: 20px;
+        background: white;
+        box-shadow: 0 18px 48px rgba(19, 32, 51, 0.12);
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      p {
+        color: #536173;
+        line-height: 1.6;
+      }
+
+      input {
+        width: 100%;
+        margin-top: 12px;
+        margin-bottom: 14px;
+        padding: 14px 16px;
+        border: 1px solid #d6deeb;
+        border-radius: 14px;
+        font: inherit;
+      }
+
+      button {
+        min-width: 140px;
+        min-height: 44px;
+        border: none;
+        border-radius: 12px;
+        background: #215df6;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      #status {
+        margin-top: 14px;
+        min-height: 22px;
+        color: #0d5e39;
+        font-weight: 600;
+      }
+
+      code {
+        background: #eef3ff;
+        padding: 2px 6px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>SignSafe Settings</h1>
+      <p>
+        Save an Anthropic API key here to enable live transaction analysis. The key is stored locally in
+        <code>chrome.storage.local</code>.
+      </p>
+      <label for="api-key">Anthropic API key</label>
+      <input id="api-key" type="password" placeholder="sk-ant-..." autocomplete="off" />
+      <button id="save" type="button">Save key</button>
+      <div id="status"></div>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SignSafe Overlay</title>
+    <link rel="stylesheet" href="overlay.css" />
+  </head>
+  <body>
+    <div id="backdrop">
+      <div id="panel">
+        <div id="eyebrow">SignSafe</div>
+        <div id="loading-state" class="state">
+          <div class="spinner" aria-hidden="true"></div>
+          <h1 id="loading-title">Analyzing transaction</h1>
+          <p id="loading-detail">Simulating on-chain effects and preparing a plain-English verdict.</p>
+        </div>
+
+        <div id="verdict-state" class="state hidden">
+          <div id="risk-badge"></div>
+          <div id="progress-label" class="subtle"></div>
+          <h1 id="summary"></h1>
+          <section>
+            <div class="section-label">What this transaction will do</div>
+            <ul id="actions-list"></ul>
+          </section>
+          <section id="risks-section" class="hidden">
+            <div class="section-label danger-label">Risk flags</div>
+            <ul id="risks-list"></ul>
+          </section>
+          <p id="verdict-text"></p>
+        </div>
+
+        <div id="batch-state" class="state hidden">
+          <div id="batch-badge" class="safe">Batch check</div>
+          <h1 id="batch-summary"></h1>
+          <p id="batch-detail" class="subtle"></p>
+          <ul id="batch-actions"></ul>
+        </div>
+
+        <div id="buttons">
+          <button id="btn-block" type="button">Block</button>
+          <button id="btn-proceed" type="button">Proceed</button>
+        </div>
+
+        <div id="footer">AI analysis helps spot risk, but it is not a guarantee. Only sign what you understand.</div>
+      </div>
+    </div>
+    <script src="overlay.js"></script>
+  </body>
+</html>
